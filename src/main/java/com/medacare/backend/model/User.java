@@ -9,10 +9,12 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -67,7 +69,8 @@ public class User implements UserDetails{
     @Enumerated(EnumType.STRING)
     private UserOrigin origin;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
     private Role role;
 
     @CreationTimestamp
@@ -87,17 +90,10 @@ public class User implements UserDetails{
         ADMIN_CREATED
     }
 
-    public enum Role {
-        USER,
-        ADMIN,
-        ORGANIZATION,
-        PHYSICIAN,
-        PATIENT
-    }
-
      @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_"+role.getName().name());
+        return List.of(authority);
     }
 
     public String getPassword() {
@@ -127,5 +123,14 @@ public class User implements UserDetails{
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+    
+    public User setRole(Role role) {
+        this.role = role;        
+        return this;
     }
 }

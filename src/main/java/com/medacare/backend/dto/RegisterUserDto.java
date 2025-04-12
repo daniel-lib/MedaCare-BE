@@ -1,5 +1,7 @@
 package com.medacare.backend.dto;
 
+import org.springframework.lang.Nullable;
+
 import com.medacare.backend.model.User.UserOrigin;
 
 import jakarta.persistence.Column;
@@ -31,5 +33,8 @@ public class RegisterUserDto {
     @NotNull(message = "User Registration Origin is required")
     // @Enumerated(EnumType.STRING)
     private String origin;
+
+    @Nullable
+    private String role;
 
 }

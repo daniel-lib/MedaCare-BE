@@ -5,6 +5,8 @@ import com.medacare.backend.dto.RegisterUserDto;
 import com.medacare.backend.model.User;
 import com.medacare.backend.repository.UserRepository;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,5 +21,12 @@ public class UserService {
 
     public UserService(UserRepository userRepo) {
         this.userRepo = userRepo;
+    }
+
+    public List<User> getAllUsers() {
+        return userRepo.findAll();
+    }
+    public User getUserById(Long id) {
+        return userRepo.findById(id).orElse(null);
     }
 }
