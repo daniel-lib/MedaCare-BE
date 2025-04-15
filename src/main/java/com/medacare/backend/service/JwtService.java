@@ -14,6 +14,7 @@ import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
+
 @Service
 public class JwtService {
     @Value("${security.jwt.secret-key}")
