@@ -25,7 +25,18 @@ public class Patient extends User{
     
     private LocalDate dateOfBirth;
     private String address;
-    private String availabilitySchedule;    //eg. 01:00AM - 02:00PM
+    private String contactNumber;
+    private String emergencyContactName;
+    private String emergencyContactNumber;
+    private String personalHistory;
+    private String pastDiagnosis;
+    private String bloodType;
+    private String allergies;
+    private String medications;
+    private String insuranceProvider;
+    private String insurancePolicyNumber;
+    private String preferredLanguage;
+    private String occupation;
 
     @OneToMany(mappedBy = "patient")
     private List<MedicalRecord> medicalRecord;
