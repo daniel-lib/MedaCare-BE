@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
-public class entry {
-    @GetMapping("/hello")
+@RequestMapping({"/"})
+public class GreetingsController {
+    @GetMapping("/api/hello")
     public String sayHello() {
         return "Welcome to MedaCare API!";
     }

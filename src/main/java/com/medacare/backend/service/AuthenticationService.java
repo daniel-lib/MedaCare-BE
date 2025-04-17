@@ -48,7 +48,7 @@ public class AuthenticationService {
                     "error",
                     null,
                     "Invalid Input",
-                    result.getAllErrors().toString()));
+                    result.getAllErrors().toString(), HttpStatus.BAD_REQUEST));
             // return new ResponseEntity<>("Invalid Input" + result.getAllErrors(),
             // HttpStatus.BAD_REQUEST);
         }
@@ -58,7 +58,7 @@ public class AuthenticationService {
                             "error",
                             null,
                             "User already exists",
-                            null));
+                            null, HttpStatus.BAD_REQUEST));
         }
 
         RoleEnum roleEnum = null;
@@ -71,7 +71,7 @@ public class AuthenticationService {
         Optional<Role> role = roleRepo.findByName(roleEnum);
         if (role.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseService.createStandardResponse("error", inputData, "Role Not Found", null));
+                    .body(responseService.createStandardResponse("error", inputData, "Role Not Found", null, HttpStatus.BAD_REQUEST));
         }
         User user = new User();
         user.setFirstName(inputData.getFirstName());
@@ -89,13 +89,13 @@ public class AuthenticationService {
         String verificationEmailResult = emailService.sendVerificationEmail(user);
         if (verificationEmailResult.equals("Error sending email")) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(responseService.createStandardResponse("error", null, "Error sending email", null));
+                    .body(responseService.createStandardResponse("error", null, "Error while sending email", null, HttpStatus.INTERNAL_SERVER_ERROR));
         } else {
             user.setVerificationCode(verificationEmailResult);
             userRepository.save(user);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(responseService.createStandardResponse("success", user,
-                            "Verification email sent.", null));
+                            "Verification email sent.", null, HttpStatus.CREATED));
         }
     }
 

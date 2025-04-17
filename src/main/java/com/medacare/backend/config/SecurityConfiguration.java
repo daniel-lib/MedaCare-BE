@@ -36,7 +36,7 @@ public class SecurityConfiguration {
                         // .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                         // "/swagger-ui.html").permitAll()
                         .requestMatchers(ApiPaths.BASE_API_VERSION + "/auth/**", "/api/hello", "/api-docs/**",
-                                "/swagger-ui/**",
+                                "/swagger-ui/**","/",
                                 "/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/swagger-ui/index.html/", "/swagger-ui.html","/api/v1/example/data")
                         .permitAll()
