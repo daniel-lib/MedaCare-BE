@@ -1,5 +1,7 @@
 package com.medacare.backend.controller;
 
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,49 +15,101 @@ import org.springframework.web.bind.annotation.RestController;
 import com.medacare.backend.config.ApiPaths;
 import com.medacare.backend.dto.LoginUserDto;
 import com.medacare.backend.dto.RegisterUserDto;
+import com.medacare.backend.dto.StandardResponse;
 import com.medacare.backend.model.User;
 import com.medacare.backend.repository.UserRepository;
 import com.medacare.backend.security.LoginResponse;
 import com.medacare.backend.service.AuthenticationService;
+import com.medacare.backend.service.EmailService;
 import com.medacare.backend.service.JwtService;
+import com.medacare.backend.service.ResponseService;
 
 import jakarta.validation.Valid;
 
-@RequestMapping(ApiPaths.BASE_API_VERSION+"/auth")
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@RequestMapping(ApiPaths.BASE_API_VERSION + "/auth")
 @RestController
+// @CrossOrigin(origins = { "http://localhost:5173", "https://medacare-fe.onrender.com" })
+@CrossOrigin
 public class AuthController {
     private final UserRepository userRepo;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final JwtService jwtService;    
+    private final JwtService jwtService;
     private final AuthenticationService authenticationService;
+    private final ResponseService responseService;
+
     public AuthController(UserRepository userRepo, BCryptPasswordEncoder passwordEncoder,
-    JwtService jwtService, AuthenticationService authenticationService) {
+            JwtService jwtService, AuthenticationService authenticationService,
+            ResponseService responseService) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
+        this.responseService = responseService;
     }
-    
 
-
-    @PostMapping(value = "/signup", consumes="application/json")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterUserDto registerUserDto, BindingResult result) {
-        ResponseEntity<String> registerationResult = authenticationService.signup(registerUserDto, result);
+    @PostMapping(value = "/signup", consumes = "application/json")
+    public ResponseEntity<StandardResponse> register(@Valid @RequestBody RegisterUserDto registerUserDto,
+            BindingResult result) {
+        ResponseEntity<StandardResponse> registerationResult = authenticationService.signup(registerUserDto, result);
         return registerationResult;
     }
-    
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<StandardResponse> getMethodName(@RequestParam("email") String email,
+            @RequestParam("token") String token) {
+        Optional<User> user = userRepo.findByEmail(email);
+        if (!user.isPresent())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseService.createStandardResponse("error",
+                    email, "There is no registered user with that email", null));
+        if (user.get().isVerified())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", email, "User is already verified", null));
+
+        if (user.get().getVerificationCode() == null || !user.get().getVerificationCode().equals(token))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", email, "Invalid verification code", null));
+        user.get().setVerified(true);
+        user.get().setVerificationCode(null);
+        userRepo.save(user.get());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(responseService.createStandardResponse("success", email, "User verified", null));
+    }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
+    public ResponseEntity<StandardResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
+
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
+        if (!authenticatedUser.isVerified()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(responseService.createStandardResponse("error", null, "User is not verified", null));
+        } else {
+            String jwtToken = jwtService.generateToken(authenticatedUser);
 
-        String jwtToken = jwtService.generateToken(authenticatedUser);
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setToken(jwtToken);
+            loginResponse.setExpiresIn(jwtService.getExpirationTime());
+            return ResponseEntity
+                    .ok(responseService.createStandardResponse("success", loginResponse, "User authenticated", null));
+        }
+    }
 
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setToken(jwtToken);
-        loginResponse.setExpiresIn(jwtService.getExpirationTime());
-
-        return ResponseEntity.ok(loginResponse);
+    @PostMapping("/email/verification")
+    public ResponseEntity<StandardResponse> sendEmailVerification(@RequestParam("email") String email) {
+        Optional<User> optionalUser = userRepo.findByEmail(email);
+        if (!optionalUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null, "User not found", null));
+        }
+        User user = optionalUser.get();
+        if (user.isVerified()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null, "User is already verified", null));
+        }
+        return authenticationService.sendVerificationEmail(user);
     }
 
 }
