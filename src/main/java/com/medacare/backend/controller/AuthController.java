@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping(ApiPaths.BASE_API_VERSION + "/auth")
 @RestController
-// @CrossOrigin(origins = { "http://localhost:5173", "https://medacare-fe.onrender.com" })
 @CrossOrigin
 public class AuthController {
     private final UserRepository userRepo;
@@ -59,24 +58,31 @@ public class AuthController {
     }
 
     @PostMapping("/verify-email")
-    public ResponseEntity<StandardResponse> getMethodName(@RequestParam("email") String email,
+    public ResponseEntity<StandardResponse> verifyEmailAddress(@RequestParam("email") String email,
             @RequestParam("token") String token) {
         Optional<User> user = userRepo.findByEmail(email);
         if (!user.isPresent())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseService.createStandardResponse("error",
                     email, "There is no registered user with that email", null, HttpStatus.BAD_REQUEST));
-        if (user.get().isVerified())
+        if (user.get().isVerified()) {
+            LoginResponse loginResponse = authenticationService.generateLoginResponse(user.get());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseService.createStandardResponse("error", email, "User is already verified", null, HttpStatus.BAD_REQUEST));
+                    .body(responseService.createStandardResponse("error", loginResponse, "User is already verified",
+                            null,
+                            HttpStatus.BAD_REQUEST));
+        }
 
         if (user.get().getVerificationCode() == null || !user.get().getVerificationCode().equals(token))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseService.createStandardResponse("error", email, "Invalid verification code", null, HttpStatus.BAD_REQUEST));
+                    .body(responseService.createStandardResponse("error", email, "Invalid verification code", null,
+                            HttpStatus.BAD_REQUEST));
         user.get().setVerified(true);
         user.get().setVerificationCode(null);
         userRepo.save(user.get());
+        LoginResponse loginResponse = authenticationService.generateLoginResponse(user.get());
         return ResponseEntity.status(HttpStatus.OK)
-                .body(responseService.createStandardResponse("success", email, "User verified", null, HttpStatus.OK));
+                .body(responseService.createStandardResponse("success", loginResponse, "User verified", null,
+                        HttpStatus.OK));
     }
 
     @PostMapping("/login")
@@ -85,15 +91,13 @@ public class AuthController {
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
         if (!authenticatedUser.isVerified()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(responseService.createStandardResponse("error", null, "User is not verified", null, HttpStatus.UNAUTHORIZED));
+                    .body(responseService.createStandardResponse("error", null, "User is not verified", null,
+                            HttpStatus.UNAUTHORIZED));
         } else {
-            String jwtToken = jwtService.generateToken(authenticatedUser);
-
-            LoginResponse loginResponse = new LoginResponse();
-            loginResponse.setToken(jwtToken);
-            loginResponse.setExpiresIn(jwtService.getExpirationTime());
+            LoginResponse loginResponse = authenticationService.generateLoginResponse(authenticatedUser);
             return ResponseEntity
-                    .ok(responseService.createStandardResponse("success", loginResponse, "User authenticated", null, HttpStatus.OK));
+                    .ok(responseService.createStandardResponse("success", loginResponse, "User authenticated", null,
+                            HttpStatus.OK));
         }
     }
 
@@ -102,12 +106,15 @@ public class AuthController {
         Optional<User> optionalUser = userRepo.findByEmail(email);
         if (!optionalUser.isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseService.createStandardResponse("error", null, "User not found", null, HttpStatus.BAD_REQUEST));
+                    .body(responseService.createStandardResponse("error", null, "User not found", null,
+                            HttpStatus.BAD_REQUEST));
         }
         User user = optionalUser.get();
         if (user.isVerified()) {
+            LoginResponse loginResponse = authenticationService.generateLoginResponse(user);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseService.createStandardResponse("error", null, "User is already verified", null, HttpStatus.BAD_REQUEST));
+                    .body(responseService.createStandardResponse("error", loginResponse, "User is already verified",
+                            null, HttpStatus.BAD_REQUEST));
         }
         return authenticationService.sendVerificationEmail(user);
     }

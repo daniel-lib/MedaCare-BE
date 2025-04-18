@@ -2,7 +2,11 @@ package com.medacare.backend.model;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,19 +20,20 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
-@PrimaryKeyJoinColumn(name  ="user_id")
-public class Patient extends User{
+@PrimaryKeyJoinColumn(name = "user_id")
+public class Patient extends User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private LocalDate dateOfBirth;
+    private Integer age;
     private String address;
     private String contactNumber;
     private String emergencyContactName;
     private String emergencyContactNumber;
-    private String personalHistory;
+    private String medicalHistory;
     private String pastDiagnosis;
     private String bloodType;
     private String allergies;
@@ -37,6 +42,11 @@ public class Patient extends User{
     private String insurancePolicyNumber;
     private String preferredLanguage;
     private String occupation;
+    private String maritalStatus;
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "patient")
     private List<MedicalRecord> medicalRecord;

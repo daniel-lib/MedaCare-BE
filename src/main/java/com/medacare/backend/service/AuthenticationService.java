@@ -9,6 +9,7 @@ import com.medacare.backend.model.User;
 import com.medacare.backend.model.User.UserOrigin;
 import com.medacare.backend.repository.RoleRepository;
 import com.medacare.backend.repository.UserRepository;
+import com.medacare.backend.security.LoginResponse;
 
 import java.util.Optional;
 
@@ -28,18 +29,21 @@ public class AuthenticationService {
     private final RoleRepository roleRepo;
     private final ResponseService responseService;
     private final EmailService emailService;
+    private final JwtService jwtService;
 
     public AuthenticationService(
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
             PasswordEncoder passwordEncoder, RoleRepository roleRepo,
-            ResponseService responseService, EmailService emailService) {
+            ResponseService responseService, EmailService emailService,
+            JwtService jwtService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepo = roleRepo;
         this.responseService = responseService;
         this.emailService = emailService;
+        this.jwtService = jwtService;
     }
 
     public ResponseEntity<StandardResponse> signup(RegisterUserDto inputData, BindingResult result) {
@@ -49,8 +53,6 @@ public class AuthenticationService {
                     null,
                     "Invalid Input",
                     result.getAllErrors().toString(), HttpStatus.BAD_REQUEST));
-            // return new ResponseEntity<>("Invalid Input" + result.getAllErrors(),
-            // HttpStatus.BAD_REQUEST);
         }
         if (userRepository.existsByEmail(inputData.getEmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -62,16 +64,20 @@ public class AuthenticationService {
         }
 
         RoleEnum roleEnum = null;
-        if (inputData.getOrigin().equals(UserOrigin.SELF_REGISTERED.name())
-                || inputData.getOrigin() == null) {
+        if (inputData.getRole() == null
+        /* inputData.getOrigin() == null */
+        /* || inputData.getOrigin().equals(UserOrigin.SELF_REGISTERED.name()) */
+        ) {
             roleEnum = RoleEnum.PATIENT;
+            inputData.setOrigin(UserOrigin.SELF_REGISTERED.name());
         } else {
             roleEnum = RoleEnum.valueOf(inputData.getRole());
         }
         Optional<Role> role = roleRepo.findByName(roleEnum);
         if (role.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseService.createStandardResponse("error", inputData, "Role Not Found", null, HttpStatus.BAD_REQUEST));
+                    .body(responseService.createStandardResponse("error", inputData, "Role Not Found", null,
+                            HttpStatus.BAD_REQUEST));
         }
         User user = new User();
         user.setFirstName(inputData.getFirstName());
@@ -89,7 +95,8 @@ public class AuthenticationService {
         String verificationEmailResult = emailService.sendVerificationEmail(user);
         if (verificationEmailResult.equals("Error sending email")) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(responseService.createStandardResponse("error", null, "Error while sending email", null, HttpStatus.INTERNAL_SERVER_ERROR));
+                    .body(responseService.createStandardResponse("error", null, "Error while sending email", null,
+                            HttpStatus.INTERNAL_SERVER_ERROR));
         } else {
             user.setVerificationCode(verificationEmailResult);
             userRepository.save(user);
@@ -107,5 +114,13 @@ public class AuthenticationService {
 
         return userRepository.findByEmail(inputData.getEmail())
                 .orElseThrow();
+    }
+
+    public LoginResponse generateLoginResponse(User user) {
+        String jwtToken = jwtService.generateToken(user);
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(jwtToken);
+        loginResponse.setExpiresIn(jwtService.getExpirationTime());
+        return loginResponse;
     }
 }

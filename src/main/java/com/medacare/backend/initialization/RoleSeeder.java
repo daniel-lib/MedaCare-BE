@@ -7,7 +7,9 @@ import com.medacare.backend.model.Role;
 import com.medacare.backend.model.RoleEnum;
 import com.medacare.backend.repository.RoleRepository;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
 @Component
 public class RoleSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final RoleRepository roleRepo;
