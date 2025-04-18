@@ -10,4 +10,6 @@ import com.medacare.backend.model.Patient;
 public interface PatientRepository extends JpaRepository<Patient, Long>{
 
     List<Patient> findAll();
+    Patient findByUserId(Long userId);
+    boolean existsByUserId(Long userId);
 }
