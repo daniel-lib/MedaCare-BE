@@ -9,7 +9,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.medacare.backend.config.ApiPaths;
@@ -20,14 +19,12 @@ import com.medacare.backend.model.User;
 import com.medacare.backend.repository.UserRepository;
 import com.medacare.backend.security.LoginResponse;
 import com.medacare.backend.service.AuthenticationService;
-import com.medacare.backend.service.EmailService;
 import com.medacare.backend.service.JwtService;
 import com.medacare.backend.service.ResponseService;
 
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping(ApiPaths.BASE_API_VERSION + "/auth")
@@ -35,17 +32,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @CrossOrigin
 public class AuthController {
     private final UserRepository userRepo;
-    private final BCryptPasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
     private final AuthenticationService authenticationService;
     private final ResponseService responseService;
 
-    public AuthController(UserRepository userRepo, BCryptPasswordEncoder passwordEncoder,
-            JwtService jwtService, AuthenticationService authenticationService,
+    public AuthController(UserRepository userRepo, AuthenticationService authenticationService,
             ResponseService responseService) {
         this.userRepo = userRepo;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
         this.authenticationService = authenticationService;
         this.responseService = responseService;
     }

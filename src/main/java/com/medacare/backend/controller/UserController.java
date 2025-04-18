@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.medacare.backend.config.ApiPaths;
 import com.medacare.backend.model.User;
+import com.medacare.backend.service.AuthenticationService;
 import com.medacare.backend.service.UserService;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -23,16 +24,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class UserController {
 
     private final UserService userService;
+    private final AuthenticationService authenticationService;
     
-    public UserController(UserService userService){
+    public UserController(UserService userService, AuthenticationService authenticationService) {
         this.userService = userService;
+        this.authenticationService = authenticationService;
     }
   
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/current")
-    public ResponseEntity<User> currentAuthenticatedUser(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
+    public ResponseEntity<User> currentAuthenticatedUser(){        
+        User currentUser = authenticationService.getCurrentUser();
         return ResponseEntity.ok(currentUser);
     }
 
