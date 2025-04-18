@@ -66,10 +66,8 @@ public class AuthenticationService {
         }
 
         RoleEnum roleEnum = null;
-        if (inputData.getRole() == null
-        /* inputData.getOrigin() == null */
-        /* || inputData.getOrigin().equals(UserOrigin.SELF_REGISTERED.name()) */
-        ) {
+        System.out.println(inputData.getOrigin());
+        if (inputData.getRole() == null) {
             roleEnum = RoleEnum.PATIENT;
             inputData.setOrigin(UserOrigin.SELF_REGISTERED.name());
         } else {

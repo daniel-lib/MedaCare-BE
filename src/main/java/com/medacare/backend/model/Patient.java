@@ -28,6 +28,7 @@ public class Patient implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id = null;
 
+    
     private LocalDate dateOfBirth;
     private Integer age;
     private String address;
@@ -73,10 +74,17 @@ public class Patient implements Serializable {
     }
 
     public Integer getAge() {
-        if (dateOfBirth != null) {
-            return LocalDate.now().getYear() - dateOfBirth.getYear();
+        if(dateOfBirth != null) {
+            LocalDate today = LocalDate.now();
+            int age = today.getYear() - dateOfBirth.getYear();
+            if (today.getMonthValue() < dateOfBirth.getMonthValue() || 
+                (today.getMonthValue() == dateOfBirth.getMonthValue() && today.getDayOfMonth() < dateOfBirth.getDayOfMonth())) {
+                age--;
+            }
+            return age;
+        } else {
+            return null;
         }
-        return null;
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
