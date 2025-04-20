@@ -45,9 +45,10 @@ public class Physician implements Serializable {
     private User user;
 
     @ManyToOne()
-    private HealthcareProvider healthcareProvider;
+    private Institution healthcareProvider;
     
-    private List<Long> fileUploads; 
+    private List<String> fileUploads;     //Urls
+    private List<Long> fileUploadsReference;     //Ids
 
     public Integer getAge(){
         if(dateOfBirth != null) {

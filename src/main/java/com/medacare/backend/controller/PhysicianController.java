@@ -46,7 +46,7 @@ public class PhysicianController {
                                                 null, HttpStatus.OK));
         }
 
-        @PreAuthorize("hasRole('ROLE_ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         @GetMapping("/{id}")
         public ResponseEntity<StandardResponse> getPhysicianById(@PathVariable Long id) {
                 Physician physician = physicianService.getPhysicianById(id);
@@ -56,7 +56,7 @@ public class PhysicianController {
                                                 null, HttpStatus.OK));
         }
 
-        @PreAuthorize("hasRole('ROLE_PHYSICIAN')")
+        @PreAuthorize("hasRole('PHYSICIAN')")
         @PostMapping
         public ResponseEntity<StandardResponse> createPhysician(@RequestBody Physician physician) {
                 Long userId = authenticationService.getCurrentUser().getId();
@@ -73,7 +73,7 @@ public class PhysicianController {
                                                 "Physician created successfully", null, HttpStatus.CREATED));
         }
 
-        @PreAuthorize("hasRole('ROLE_ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         @PutMapping("/{id}")
         public ResponseEntity<StandardResponse> updatePhysician(@PathVariable Long id,
                         @RequestBody Physician physician) {
@@ -83,7 +83,7 @@ public class PhysicianController {
                                                 "Physician updated successfully", null, HttpStatus.OK));
         }
 
-        @PreAuthorize("hasRole('ROLE_ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         @DeleteMapping("/{id}")
         public ResponseEntity<StandardResponse> deletePhysician(@PathVariable Long id) {
                 physicianService.deletePhysician(id);

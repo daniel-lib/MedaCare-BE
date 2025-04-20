@@ -27,7 +27,7 @@ public class PatientController {
     }
 
     // @Transient
-    @PreAuthorize("hasRole('ROLE_PATIENT')")
+    @PreAuthorize("hasRole('PATIENT')")
     @PostMapping(value = { "", "/" }, consumes = "application/json")
     public ResponseEntity<StandardResponse> registerPatient(@RequestBody Patient patient) {
         return patientService.savePatientDetail(patient);

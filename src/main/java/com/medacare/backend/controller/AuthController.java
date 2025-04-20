@@ -27,9 +27,9 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@RequestMapping(ApiPaths.BASE_API_VERSION + "/auth")
 @RestController
 @CrossOrigin
+@RequestMapping(ApiPaths.BASE_API_VERSION + "/auth")
 public class AuthController {
     private final UserRepository userRepo;
     private final AuthenticationService authenticationService;
@@ -43,9 +43,8 @@ public class AuthController {
     }
 
     @PostMapping(value = "/signup", consumes = "application/json")
-    public ResponseEntity<StandardResponse> register(@Valid @RequestBody RegisterUserDto registerUserDto,
-            BindingResult result) {
-        ResponseEntity<StandardResponse> registerationResult = authenticationService.signup(registerUserDto, result);
+    public ResponseEntity<StandardResponse> register(@Valid @RequestBody RegisterUserDto registerUserDto) {
+        ResponseEntity<StandardResponse> registerationResult = authenticationService.signup(registerUserDto);
         return registerationResult;
     }
 
