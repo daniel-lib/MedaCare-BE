@@ -11,6 +11,9 @@ import com.medacare.backend.repository.RoleRepository;
 import com.medacare.backend.repository.UserRepository;
 import com.medacare.backend.security.LoginResponse;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.validation.Valid;
+
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -48,14 +51,15 @@ public class AuthenticationService {
         this.jwtService = jwtService;
     }
 
-    public ResponseEntity<StandardResponse> signup(RegisterUserDto inputData, BindingResult result) {
-        if (result.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseService.createStandardResponse(
-                    "error",
-                    null,
-                    "Invalid Input",
-                    result.getAllErrors().toString(), HttpStatus.BAD_REQUEST));
-        }
+    public ResponseEntity<StandardResponse> signup(@Valid @RequestBody RegisterUserDto inputData) {
+        // if (result.hasErrors()) {
+        // return
+        // ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseService.createStandardResponse(
+        // "error",
+        // null,
+        // "Invalid Input",
+        // result.getAllErrors().toString(), HttpStatus.BAD_REQUEST));
+        // }
         if (userRepository.existsByEmail(inputData.getEmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(responseService.createStandardResponse(
@@ -66,14 +70,18 @@ public class AuthenticationService {
         }
 
         RoleEnum roleEnum = null;
-        if (inputData.getRole() == null
-        /* inputData.getOrigin() == null */
-        /* || inputData.getOrigin().equals(UserOrigin.SELF_REGISTERED.name()) */
-        ) {
+        if (inputData.getRole() == null) {
             roleEnum = RoleEnum.PATIENT;
             inputData.setOrigin(UserOrigin.SELF_REGISTERED.name());
+
         } else {
-            roleEnum = RoleEnum.valueOf(inputData.getRole());
+            try {
+                roleEnum = RoleEnum.valueOf(inputData.getRole().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(responseService.createStandardResponse("error", null, "Invalid Role",
+                                inputData.getRole() + " is not a valid role.", HttpStatus.BAD_REQUEST));
+            }
         }
         Optional<Role> role = roleRepo.findByName(roleEnum);
         if (role.isEmpty()) {
@@ -85,7 +93,13 @@ public class AuthenticationService {
         user.setFirstName(inputData.getFirstName());
         user.setLastName(inputData.getLastName());
         user.setEmail(inputData.getEmail());
-        user.setOrigin(User.UserOrigin.valueOf(inputData.getOrigin()));
+        try {
+            user.setOrigin(User.UserOrigin.valueOf(inputData.getOrigin()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null, "Invalid value for origin",
+                            inputData.getOrigin() + " is not a valid origin.", HttpStatus.BAD_REQUEST));
+        }
         user.setPassword(passwordEncoder.encode(inputData.getPassword()));
         user.setRole(role.get());
 
@@ -97,13 +111,13 @@ public class AuthenticationService {
         String verificationEmailResult = emailService.sendVerificationEmail(user);
         if (verificationEmailResult.equals("Error sending email")) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(responseService.createStandardResponse("error", null, "Error while sending email", null,
+                    .body(responseService.createStandardResponse("error", null, "Could not send email. Make sure you've used valid email.", null,
                             HttpStatus.INTERNAL_SERVER_ERROR));
         } else {
             user.setVerificationCode(verificationEmailResult);
-            userRepository.save(user);
+            User savedUser = userRepository.save(user);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(responseService.createStandardResponse("success", user,
+                    .body(responseService.createStandardResponse("success", savedUser,
                             "Verification email sent.", null, HttpStatus.CREATED));
         }
     }
@@ -125,10 +139,11 @@ public class AuthenticationService {
         loginResponse.setExpiresIn(jwtService.getExpirationTime());
         return loginResponse;
     }
-    public User getCurrentUser(){
+
+    public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return (User) authentication.getPrincipal();
         // return userRepository.findByEmail(jwtService.getCurrentUserEmail())
-        //         .orElseThrow(() -> new RuntimeException("User not found"));
+        // .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

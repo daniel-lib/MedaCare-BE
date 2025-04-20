@@ -47,6 +47,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @Version
     private Long version = 1L;
 
@@ -90,6 +91,7 @@ public class User implements UserDetails {
     @UpdateTimestamp
     private LocalDate updatedOn;
 
+    @JsonIgnore
     private boolean active = true;
 
     public enum UserOrigin {
@@ -110,6 +112,7 @@ public class User implements UserDetails {
         return password;
     }
 
+    @JsonIgnore
     @Override
     public String getUsername() {
         return email;

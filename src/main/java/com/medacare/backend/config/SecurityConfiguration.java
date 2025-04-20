@@ -38,7 +38,8 @@ public class SecurityConfiguration {
                         .requestMatchers(ApiPaths.BASE_API_VERSION + "/auth/**", "/api/hello", "/api-docs/**",
                                 "/swagger-ui/**","/",
                                 "/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                                "/swagger-ui/index.html/", "/swagger-ui.html","/api/v1/example/data")
+                                "/swagger-ui/index.html/", "/swagger-ui.html","/api/v1/example/data",
+                                ApiPaths.BASE_API_VERSION+"/institutions", ApiPaths.BASE_API_VERSION+"/institutions/")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
@@ -52,7 +53,7 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://medacare-fe.onrender.com"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173","http://localhost:5173/", "https://medacare-fe.onrender.com", "https://medacare-fe.onrender.com/"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);

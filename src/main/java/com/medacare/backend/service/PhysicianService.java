@@ -33,7 +33,6 @@ public class PhysicianService {
         Physician existingPhysician = physicianRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Physician not found with id: " + id));
 
-        // Update fields of the existing physician
         existingPhysician.setSpecialization(physician.getSpecialization());
         existingPhysician.setLicenseNumber(physician.getLicenseNumber());
         existingPhysician.setAvailabilitySchedule(physician.getAvailabilitySchedule());

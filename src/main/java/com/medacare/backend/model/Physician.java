@@ -1,6 +1,7 @@
 package com.medacare.backend.model;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.persistence.Entity;
@@ -30,6 +31,12 @@ public class Physician implements Serializable {
     private String availabilitySchedule;    //eg. 01:00AM - 02:00PM
     private String education;
     private String gender;
+    private LocalDate dateOfBirth;
+    private Integer age;
+    private Integer experience; // in years
+    private String languagesSpoken;
+    
+    
 
     private Boolean orgnanizationAffiliated;
 
@@ -38,7 +45,27 @@ public class Physician implements Serializable {
     private User user;
 
     @ManyToOne()
-    private HealthcareProvider healthcareProvider;
+    private Institution healthcareProvider;
+    
+    private List<String> fileUploads;     //Urls
+    private List<Long> fileUploadsReference;     //Ids
 
+    public Integer getAge(){
+        if(dateOfBirth != null) {
+            LocalDate today = LocalDate.now();
+            int age = today.getYear() - dateOfBirth.getYear();
+            if (today.getMonthValue() < dateOfBirth.getMonthValue() || 
+                (today.getMonthValue() == dateOfBirth.getMonthValue() && today.getDayOfMonth() < dateOfBirth.getDayOfMonth())) {
+                age--;
+            }
+            return age;
+        } else {
+            return null;
+        }
+    }
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+        this.age = getAge();
+    }
     
 }

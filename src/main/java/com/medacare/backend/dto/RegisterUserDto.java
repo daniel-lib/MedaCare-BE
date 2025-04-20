@@ -44,7 +44,7 @@ public class RegisterUserDto {
     // @Enumerated(EnumType.STRING)
     private String origin;
 
-    @Nullable
+    // @Nullable
     private String role;
 
 }
