@@ -26,13 +26,39 @@ public class InstitutionController {
         this.responseService = responseService;
     }
 
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/pending/requests")
     public ResponseEntity<StandardResponse> getAllInstitutions() {
-        List<Institution> institutions = institutionService.getAllInstitutions();
+        List<Institution> institutions = institutionService.getAllPendingInstitutions();
         return ResponseEntity.status(HttpStatus.OK)
                 .body(responseService.createStandardResponse("success", institutions,
-                        "Institutions retrieved successfully", null, HttpStatus.OK));
+                        "Institutions retrieved successfully", null));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/requests/{id}/{status}")
+    public ResponseEntity<StandardResponse> getAllInstitutions(@PathVariable long id, @PathVariable String status) {
+        if(status.equalsIgnoreCase("approved")) {
+            institutionService.approveInstitution(id);
+        } else if(status.equalsIgnoreCase("rejected")) {
+            institutionService.rejectInstitution(id);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null,
+                            "Invalid status provided", null));
+        }
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(responseService.createStandardResponse("success", null,
+                        "Institution request status updated successfully", null));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping
+    public ResponseEntity<StandardResponse> getAllApprovedInstitutions() {
+        List<Institution> institutions = institutionService.getAllApprovedInstitutions();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(responseService.createStandardResponse("success", institutions,
+                        "Institutions retrieved successfully", null));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -41,7 +67,7 @@ public class InstitutionController {
         Institution institution = institutionService.getInstitutionById(id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(responseService.createStandardResponse("success", institution,
-                        "Institution retrieved successfully", null, HttpStatus.OK));
+                        "Institution retrieved successfully", null));
     }
 
     @PreAuthorize("permitAll()")
@@ -50,7 +76,7 @@ public class InstitutionController {
         Institution createdInstitution = institutionService.createInstitution(institution);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(responseService.createStandardResponse("success", createdInstitution,
-                        "Institution registration request submitted successfully", null, HttpStatus.CREATED));
+                        "Institution registration request submitted successfully", null));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -60,7 +86,7 @@ public class InstitutionController {
         Institution updatedInstitution = institutionService.updateInstitution(id, institution);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(responseService.createStandardResponse("success", updatedInstitution,
-                        "Institution updated successfully", null, HttpStatus.OK));
+                        "Institution updated successfully", null));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -69,6 +95,6 @@ public class InstitutionController {
         institutionService.deleteInstitution(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(responseService.createStandardResponse("success", null,
-                        "Institution deleted successfully", null, HttpStatus.NO_CONTENT));
+                        "Institution deleted successfully", null));
     }
 }

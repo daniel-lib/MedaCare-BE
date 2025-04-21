@@ -43,7 +43,7 @@ public class PhysicianController {
                 return ResponseEntity.status(HttpStatus.OK)
                                 .body(responseService.createStandardResponse("success", physicians,
                                                 "Physicians retrieved successfully",
-                                                null, HttpStatus.OK));
+                                                null));
         }
 
         @PreAuthorize("hasRole('ADMIN')")
@@ -53,7 +53,7 @@ public class PhysicianController {
                 return ResponseEntity.status(HttpStatus.OK)
                                 .body(responseService.createStandardResponse("success", physician,
                                                 "Physician retrieved successfully",
-                                                null, HttpStatus.OK));
+                                                null));
         }
 
         @PreAuthorize("hasRole('PHYSICIAN')")
@@ -63,14 +63,13 @@ public class PhysicianController {
                 if (physicianRepository.existsById(userId)) {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                         .body(responseService.createStandardResponse("error", physician,
-                                                        "Physician info already saved", null,
-                                                        HttpStatus.BAD_REQUEST));
+                                                        "Physician info already saved", null));
                 }
                 physician.setUser(authenticationService.getCurrentUser());
                 Physician createdPhysician = physicianService.createPhysician(physician);
                 return ResponseEntity.status(HttpStatus.CREATED)
                                 .body(responseService.createStandardResponse("success", createdPhysician,
-                                                "Physician created successfully", null, HttpStatus.CREATED));
+                                                "Physician created successfully", null));
         }
 
         @PreAuthorize("hasRole('ADMIN')")
@@ -80,7 +79,7 @@ public class PhysicianController {
                 Physician updatedPhysician = physicianService.updatePhysician(id, physician);
                 return ResponseEntity.status(HttpStatus.OK)
                                 .body(responseService.createStandardResponse("success", updatedPhysician,
-                                                "Physician updated successfully", null, HttpStatus.OK));
+                                                "Physician updated successfully", null));
         }
 
         @PreAuthorize("hasRole('ADMIN')")
@@ -89,7 +88,6 @@ public class PhysicianController {
                 physicianService.deletePhysician(id);
                 return ResponseEntity.status(HttpStatus.NO_CONTENT)
                                 .body(responseService.createStandardResponse("success", null,
-                                                "Physician deleted successfully", null,
-                                                HttpStatus.NO_CONTENT));
+                                                "Physician deleted successfully", null));
         }
 }

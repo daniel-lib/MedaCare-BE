@@ -54,41 +54,36 @@ public class AuthController {
         Optional<User> user = userRepo.findByEmail(email);
         if (!user.isPresent())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseService.createStandardResponse("error",
-                    email, "There is no registered user with that email", null, HttpStatus.BAD_REQUEST));
+                    email, "There is no registered user with that email", null));
         if (user.get().isVerified()) {
             LoginResponse loginResponse = authenticationService.generateLoginResponse(user.get());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(responseService.createStandardResponse("error", loginResponse, "User is already verified",
-                            null,
-                            HttpStatus.BAD_REQUEST));
+                            null));
         }
 
         if (user.get().getVerificationCode() == null || !user.get().getVerificationCode().equals(token))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseService.createStandardResponse("error", email, "Invalid verification code", null,
-                            HttpStatus.BAD_REQUEST));
+                    .body(responseService.createStandardResponse("error", email, "Invalid verification code", null));
         user.get().setVerified(true);
         user.get().setVerificationCode(null);
         userRepo.save(user.get());
         LoginResponse loginResponse = authenticationService.generateLoginResponse(user.get());
         return ResponseEntity.status(HttpStatus.OK)
-                .body(responseService.createStandardResponse("success", loginResponse, "User verified", null,
-                        HttpStatus.OK));
+                .body(responseService.createStandardResponse("success", loginResponse, "User verified", null));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<StandardResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
+    public ResponseEntity<StandardResponse> authenticate(@Valid @RequestBody LoginUserDto loginUserDto) {
 
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
         if (!authenticatedUser.isVerified()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(responseService.createStandardResponse("error", null, "User is not verified", null,
-                            HttpStatus.UNAUTHORIZED));
+                    .body(responseService.createStandardResponse("error", null, "User is not verified", null));
         } else {
             LoginResponse loginResponse = authenticationService.generateLoginResponse(authenticatedUser);
             return ResponseEntity
-                    .ok(responseService.createStandardResponse("success", loginResponse, "User authenticated", null,
-                            HttpStatus.OK));
+                    .ok(responseService.createStandardResponse("success", loginResponse, "User authenticated", null));
         }
     }
 
@@ -97,15 +92,14 @@ public class AuthController {
         Optional<User> optionalUser = userRepo.findByEmail(email);
         if (!optionalUser.isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseService.createStandardResponse("error", null, "User not found", null,
-                            HttpStatus.BAD_REQUEST));
+                    .body(responseService.createStandardResponse("error", null, "User not found", null));
         }
         User user = optionalUser.get();
         if (user.isVerified()) {
             LoginResponse loginResponse = authenticationService.generateLoginResponse(user);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(responseService.createStandardResponse("error", loginResponse, "User is already verified",
-                            null, HttpStatus.BAD_REQUEST));
+                            null));
         }
         return authenticationService.sendVerificationEmail(user);
     }

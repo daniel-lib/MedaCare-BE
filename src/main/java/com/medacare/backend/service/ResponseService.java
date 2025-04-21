@@ -10,8 +10,7 @@ import com.medacare.backend.dto.StandardResponse;
 
 @Service
 public class ResponseService {
-    public StandardResponse createStandardResponse(String status, Object data, String message, String errors,
-            HttpStatus statusCode) {
+    public StandardResponse createStandardResponse(String status, Object data, String message, String errors) {
         StandardResponse response = new StandardResponse();
         response.setStatus(status);
         response.setData(data);
