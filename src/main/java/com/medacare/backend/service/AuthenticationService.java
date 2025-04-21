@@ -52,21 +52,13 @@ public class AuthenticationService {
     }
 
     public ResponseEntity<StandardResponse> signup(@Valid @RequestBody RegisterUserDto inputData) {
-        // if (result.hasErrors()) {
-        // return
-        // ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseService.createStandardResponse(
-        // "error",
-        // null,
-        // "Invalid Input",
-        // result.getAllErrors().toString(), HttpStatus.BAD_REQUEST));
-        // }
         if (userRepository.existsByEmail(inputData.getEmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(responseService.createStandardResponse(
                             "error",
                             null,
                             "User already exists",
-                            null, HttpStatus.BAD_REQUEST));
+                            null));
         }
 
         RoleEnum roleEnum = null;
@@ -80,14 +72,13 @@ public class AuthenticationService {
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(responseService.createStandardResponse("error", null, "Invalid Role",
-                                inputData.getRole() + " is not a valid role.", HttpStatus.BAD_REQUEST));
+                                inputData.getRole() + " is not a valid role."));
             }
         }
         Optional<Role> role = roleRepo.findByName(roleEnum);
         if (role.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseService.createStandardResponse("error", inputData, "Role Not Found", null,
-                            HttpStatus.BAD_REQUEST));
+                    .body(responseService.createStandardResponse("error", inputData, "Role Not Found", null));
         }
         User user = new User();
         user.setFirstName(inputData.getFirstName());
@@ -98,7 +89,7 @@ public class AuthenticationService {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(responseService.createStandardResponse("error", null, "Invalid value for origin",
-                            inputData.getOrigin() + " is not a valid origin.", HttpStatus.BAD_REQUEST));
+                            inputData.getOrigin() + " is not a valid origin."));
         }
         user.setPassword(passwordEncoder.encode(inputData.getPassword()));
         user.setRole(role.get());
@@ -111,14 +102,14 @@ public class AuthenticationService {
         String verificationEmailResult = emailService.sendVerificationEmail(user);
         if (verificationEmailResult.equals("Error sending email")) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(responseService.createStandardResponse("error", null, "Could not send email. Make sure you've used valid email.", null,
-                            HttpStatus.INTERNAL_SERVER_ERROR));
+                    .body(responseService.createStandardResponse("error", null,
+                            "Could not send email. Make sure you've used valid email.", null));
         } else {
             user.setVerificationCode(verificationEmailResult);
             User savedUser = userRepository.save(user);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(responseService.createStandardResponse("success", savedUser,
-                            "Verification email sent.", null, HttpStatus.CREATED));
+                            "Verification email sent.", null));
         }
     }
 

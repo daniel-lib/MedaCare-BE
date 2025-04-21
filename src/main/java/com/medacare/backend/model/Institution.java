@@ -79,7 +79,7 @@ public class Institution implements Serializable {
     private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
-    private InstitutionRegistrationRequestStatus RequestStatus;
+    private InstitutionRegistrationRequestStatus requestStatus;
 
     private List<String> fileUploads;     //Urls
     private List<Long> fileUploadsReference;     //Ids

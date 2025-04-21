@@ -40,17 +40,17 @@ public class PatientService {
                         "error",
                         patient,
                         "Patient already registered",
-                        null, HttpStatus.BAD_REQUEST));
+                        null));
             }
             patient.setUser(authenticationService.getCurrentUser());
             Patient savedPatient = patientRepository.save(patient);
             StandardResponse response = responseService.createStandardResponse("success", savedPatient,
-                    "Patient registered successfully", null, HttpStatus.CREATED);
+                    "Patient registered successfully", null);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             e.printStackTrace();
             StandardResponse response = responseService.createStandardResponse("error", null,
-                    "Failed to register patient", null, HttpStatus.INTERNAL_SERVER_ERROR);
+                    "Failed to register patient", null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

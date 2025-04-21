@@ -62,4 +62,25 @@ public class InstitutionService {
                 .orElseThrow(() -> new RuntimeException("Institution not found with id: " + id));
         institutionRepository.delete(existingInstitution);
     }
+    public List<Institution> getAllApprovedInstitutions() {
+        return institutionRepository.findByRequestStatus(InstitutionRegistrationRequestStatus.APPROVED);
+    }
+    public List<Institution> getAllPendingInstitutions() {
+        return institutionRepository.findByRequestStatus(InstitutionRegistrationRequestStatus.PENDING);
+    }
+    public List<Institution> getAllRejectedInstitutions() {
+        return institutionRepository.findByRequestStatus(InstitutionRegistrationRequestStatus.REJECTED);
+     }
+    public Institution approveInstitution(Long id) {
+        Institution institution = institutionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Institution not found with id: " + id));
+        institution.setRequestStatus(InstitutionRegistrationRequestStatus.APPROVED);
+        return institutionRepository.save(institution);
+    }
+    public Institution rejectInstitution(Long id) {
+        Institution institution = institutionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Institution not found with id: " + id));
+        institution.setRequestStatus(InstitutionRegistrationRequestStatus.REJECTED);
+        return institutionRepository.save(institution);
+    }
 }
