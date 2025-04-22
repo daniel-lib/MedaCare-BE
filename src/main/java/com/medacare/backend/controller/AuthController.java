@@ -4,15 +4,18 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.medacare.backend.config.ApiPaths;
 import com.medacare.backend.dto.LoginUserDto;
+import com.medacare.backend.dto.PasswordUpdateDto;
 import com.medacare.backend.dto.RegisterUserDto;
 import com.medacare.backend.dto.StandardResponse;
 import com.medacare.backend.model.User;
@@ -104,4 +107,22 @@ public class AuthController {
         return authenticationService.sendVerificationEmail(user);
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/password")
+    public ResponseEntity<StandardResponse> updatePassword(@Valid @RequestBody PasswordUpdateDto passwordUpdateData) {
+        Optional<User> optionalUser = userRepo.findByEmail(passwordUpdateData.getEmail());
+        if (!optionalUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null, "User not found", null));
+        }
+        User user = optionalUser.get();
+        if (!new BCryptPasswordEncoder().matches(passwordUpdateData.getOldPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null, "Old password is incorrect", null));
+        }
+        user.setPassword(new BCryptPasswordEncoder().encode(passwordUpdateData.getNewPassword()));
+        userRepo.save(user);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(responseService.createStandardResponse("success", null, "Password updated successfully", null));
+    }
 }

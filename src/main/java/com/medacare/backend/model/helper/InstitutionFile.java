@@ -1,4 +1,6 @@
-package com.medacare.backend.model;
+package com.medacare.backend.model.helper;
+
+
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -6,6 +8,12 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.medacare.backend.model.Institution;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
@@ -15,10 +23,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FileUpload implements Serializable{
+@Entity
+public class InstitutionFile implements Serializable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private Long uploader; // patient, doctor, admin
+
+    private Long uploader; // inst. admin ref
     private String filePath;
     private String fileId;
     private String fileURL;
@@ -33,10 +45,10 @@ public class FileUpload implements Serializable{
     private String fileSharing; // shared, not shared
     private String fileSharingType; // public, private, group
 
-    private RoleEnum fileOwnerRole; // patient, doctor,...
 
-
-    // private Long fileOwner; //change to OBJECT...Postibly User type
+    @ManyToOne()
+    @JoinColumn(name = "file_owner_institution")
+    private Institution fileOwner;
 
     @CreationTimestamp
     private LocalDateTime uploadDate;

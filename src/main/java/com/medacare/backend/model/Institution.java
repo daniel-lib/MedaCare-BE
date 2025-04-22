@@ -2,10 +2,16 @@ package com.medacare.backend.model;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.medacare.backend.model.helper.InstitutionFile;
+import com.medacare.backend.model.helper.InstitutionFiles;
 
 import jakarta.annotation.Generated;
 import jakarta.persistence.Entity;
@@ -17,6 +23,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -41,8 +48,8 @@ public class Institution implements Serializable {
     private String type; // Enum: HOSPITAL, CLINIC, DIAGNOSTIC_CENTER, etc.
 
     // Location Info
-    @NotBlank(message = "Country is mandatory")
-    private String country;
+    // @NotBlank(message = "Country is mandatory")
+    private String country = "Ethiopia"; // Default to Ethiopia for now
     private String regionOrState;
     private String subCityOrDistrict;
     private String street;
@@ -65,6 +72,7 @@ public class Institution implements Serializable {
     private String availableFacilities; // e.g., lab testing, pharmacy
     private String offeredSpecializations; // e.g., Cardiology, Dermatology
 
+    @JsonIgnore
     @OneToMany(mappedBy = "healthcareProvider")
     private List<Physician> physicians;
 
@@ -81,8 +89,13 @@ public class Institution implements Serializable {
     @Enumerated(EnumType.STRING)
     private InstitutionRegistrationRequestStatus requestStatus;
 
-    private List<String> fileUploads;     //Urls
-    private List<Long> fileUploadsReference;     //Ids
+
+    @Transient
+    private Map<String, String> fileUploads =  new HashMap<>(); 
+
+    @OneToMany(mappedBy = "fileOwner")
+    private List<InstitutionFile> uploadedFiles; 
+
 
     public enum InstitutionRegistrationRequestStatus {
         PENDING,
