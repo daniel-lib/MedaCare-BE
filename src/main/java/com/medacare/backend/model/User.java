@@ -13,7 +13,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+import io.swagger.v3.core.util.Json;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -67,12 +69,18 @@ public class User implements UserDetails {
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", message = "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character")
     @JsonIgnore
     private String password;
+    
+    private boolean passwordResetRequired = false;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private Long institutionId;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private String institutionName;
 
     private Boolean firstLogin = true;
     private boolean verified = false;
     @JsonIgnore
     private String verificationCode;
-
 
     @NotNull(message = "User Registration Origin is required")
     @Enumerated(EnumType.STRING)

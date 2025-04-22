@@ -40,8 +40,6 @@ public class Patient implements Serializable {
     private String bloodType;
     private String allergies;
     private String medications;
-    private String insuranceProvider;
-    private String insurancePolicyNumber;
     private String preferredLanguage;
     private String occupation;
     private String maritalStatus;

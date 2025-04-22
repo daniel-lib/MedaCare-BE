@@ -11,6 +11,8 @@ import com.medacare.backend.model.Institution;
 import com.medacare.backend.service.InstitutionService;
 import com.medacare.backend.service.ResponseService;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -49,7 +51,7 @@ public class InstitutionController {
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .body(responseService.createStandardResponse("success", null,
-                        "Institution request status updated successfully", null));
+                        "Institution request status updated successfully. Generated user account has been sent to provided email address", null));
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -72,7 +74,7 @@ public class InstitutionController {
 
     @PreAuthorize("permitAll()")
     @PostMapping
-    public ResponseEntity<StandardResponse> submitInstitutionRegistrationRequest(@RequestBody Institution institution) {
+    public ResponseEntity<StandardResponse> submitInstitutionRegistrationRequest(@Valid @RequestBody Institution institution) {
         Institution createdInstitution = institutionService.createInstitution(institution);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(responseService.createStandardResponse("success", createdInstitution,
