@@ -75,6 +75,11 @@ public class AuthenticationService {
                                 inputData.getRole() + " is not a valid role."));
             }
         }
+        if (roleEnum != RoleEnum.PATIENT && roleEnum != RoleEnum.PHYSICIAN) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null, "Invalid Role",
+                            "Organization roles are not allowed for self-registration."));
+        }
         Optional<Role> role = roleRepo.findByName(roleEnum);
         if (role.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

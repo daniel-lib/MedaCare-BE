@@ -3,6 +3,7 @@ package com.medacare.backend.config;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,11 +18,14 @@ import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpClientErrorException.BadRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.medacare.backend.dto.StandardErrorResponse;
 import com.medacare.backend.dto.StandardResponse;
@@ -37,7 +41,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public StandardErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<StandardErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         BindingResult bindingResult = ex.getBindingResult();
         Map<String, String> errors = new HashMap<>();
 
@@ -45,10 +49,11 @@ public class GlobalExceptionHandler {
             errors.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
 
-        return responseService.createStandardErrorResponse(
-                "error",
-                "Validation failed",
-                errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(responseService.createStandardErrorResponse(
+                    "error",
+                    "Validation failed",
+                    errors));
     }
 
     @ExceptionHandler(Exception.class)
@@ -58,8 +63,12 @@ public class GlobalExceptionHandler {
         response.setStatus("error");
         response.setMessage("Unknown internal server error");
         exception.printStackTrace();
-        // System.out.println(":::::::::"+exception.getCause());
         int statusCode = 500;
+
+        // if(exception instanceof MethodArgumentNotValidException){
+        //     statusCode = 400;
+        //     response.setMessage("Invalid input data");
+        // }
 
         if (exception instanceof BadCredentialsException) {
             response.setMessage("The email or password is incorrect");
@@ -100,6 +109,19 @@ public class GlobalExceptionHandler {
         if (exception instanceof ExpiredJwtException) {
             statusCode = 403;
             response.setMessage("The JWT token has expired");
+        }
+        
+        if(exception instanceof NoResourceFoundException || exception instanceof NoHandlerFoundException){
+            statusCode = 404;
+            response.setMessage("No resource found");
+        }
+        if(exception instanceof DateTimeParseException){
+            statusCode = 400;
+            response.setMessage("Invalid date format");
+        }
+        if(exception instanceof HttpRequestMethodNotSupportedException){
+            statusCode = 403;
+            response.setMessage("Method not allowed");
         }
 
         return ResponseEntity.status(statusCode)

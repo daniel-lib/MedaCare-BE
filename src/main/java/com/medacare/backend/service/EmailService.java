@@ -30,15 +30,19 @@ public class EmailService {
             Random random = new Random();
             String verificationToken = String.valueOf(random.nextInt(122222, 999999));
             String subject = "MedaCare Email Verification Code";
-            String bodyText = "We received a request to signup to MedaCare. Please <b>verify your email</b> by <b>entering the code</b> below";
-            String body = "<div style='font-family: Arial, sans-serif; text-align: center;'>"
-                    + "<img src='cid:headerImage' alt='MedaCare' style='width: 100%; max-width: 600px;' />"
-                    + "<h2 style='color: #1d5775;'>Welcome to MedaCare!</h2>"
-                    + "<p>" + bodyText + "</p>"
-                    + "<h1 style='color: #b64c4c; font-size:13pt'>" + verificationToken + "</h1>"
+            String bodyText = "Thank you for signing up. Please verify your email address, by entering the code below.";
+            String body = "<div style='font-family: Arial, sans-serif;'>"
+                    + "<div style='text-align: center;'><img src='cid:headerImage' alt='MedaCare' style='width: 100%; max-width: 600px;' /></div>"
+                    + "<h1 style='color: #4a798b; text-align: center;'>Welcome to MedaCare</h1>"
+                    + "<div style='margin: 1em 10em'><h3 style='font-weight: 800; font-size: 17px'>Hello "+user.getFirstName().substring(0, 1).toUpperCase() + user.getFirstName().substring(1)+",</h3>"
+                    + "<p style='font-size: 18px'>" + bodyText + "</p>"
+                    +"<div><center><p style='text-align: center; font-size: 25px;color: #a55d68; background-color: #F5F5F5;"
+                    + "padding: 0.3em 2em; width: fit-content; font-weight: 600;'>"+ verificationToken +"</p></center></div>"
                     + "</br>"
-                    + "<p style='color:#848484'>If you did not request this, please ignore this email.</p>"
-                    + "</div>";
+                    + "<p style='font-size: 20px margin-top:20px; margnin-bottom: 10px'>Kind Regards,</p>"
+                    + "<p style='color: #407284; font-weight: 600; font-size: 14px'>Your Health, Anywhere</p>"
+                    + "<p style='color:#848484; margin-top:20px; text-align: center;'>If you did not request this, please ignore this email.</p>"
+                    + "</div></div>";
 
             sendEmail(user.getEmail(), subject, body);
 
@@ -59,18 +63,17 @@ public class EmailService {
         helper.setSubject(subject);
         helper.setText(body, true);
 
-        helper.addInline("headerImage", new ClassPathResource("static/images/medacare_email_header.jpg"));
+        helper.addInline("headerImage", new ClassPathResource("static/images/MedaCareEmailHeader.jpg"));
 
         mailSender.send(message);
     }
 
-    public String sendInstitutionAccountCreationEmail(User user, String generatedPassword) {
+    public String sendAutoAccountCreationEmail(User user, String generatedPassword, String introText) {
         try {
             String subject = "Account Has been Created for You!";
-            String bodyText = "We received a request to create account for your institution. Your credentials are as follows"
+            String bodyText = introText + ". Your credentials are as follows"
                     + "<br><b>Username:</b> " + user.getEmail()
-                    + "<br><b>Password:</b> " + generatedPassword
-                    + "<br><br>Please <b>verify your email</b> by <b>entering the code</b> below";
+                    + "<br><b>Password:</b> " + generatedPassword;
             String body = "<div style='font-family: Arial, sans-serif; text-align: center;'>"
                     + "<img src='cid:headerImage' alt='MedaCare' style='width: 100%; max-width: 600px;' />"
                     + "<h2 style='color: #1d5775;'>Welcome to MedaCare!</h2>"
