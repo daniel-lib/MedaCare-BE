@@ -10,11 +10,11 @@ import com.medacare.backend.config.ApiPaths;
 import com.medacare.backend.dto.StandardResponse;
 import com.medacare.backend.model.Physician;
 import com.medacare.backend.repository.PhysicianRepository;
-import com.medacare.backend.repository.UserRepository;
 import com.medacare.backend.service.AuthenticationService;
 import com.medacare.backend.service.PhysicianService;
 import com.medacare.backend.service.ResponseService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -64,6 +64,11 @@ public class PhysicianController {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                         .body(responseService.createStandardResponse("error", physician,
                                                         "Physician info already saved", null));
+                }
+                if(physician.getDateOfBirth().isAfter(LocalDate.now())) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                        .body(responseService.createStandardResponse("error", null,
+                                                        "Date of birth cannot be in the future", null));
                 }
                 physician.setUser(authenticationService.getCurrentUser());
                 Physician createdPhysician = physicianService.createPhysician(physician);

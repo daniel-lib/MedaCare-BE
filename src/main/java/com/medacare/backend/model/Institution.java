@@ -11,8 +11,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.medacare.backend.model.helper.InstitutionFile;
-import com.medacare.backend.model.helper.InstitutionFiles;
-
 import jakarta.annotation.Generated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -93,6 +91,7 @@ public class Institution implements Serializable {
     @Transient
     private Map<String, String> fileUploads =  new HashMap<>(); 
 
+    @JsonIgnore
     @OneToMany(mappedBy = "fileOwner")
     private List<InstitutionFile> uploadedFiles; 
 

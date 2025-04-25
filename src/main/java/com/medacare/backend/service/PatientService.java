@@ -55,4 +55,12 @@ public class PatientService {
         }
     }
 
+    public Patient getCurrentUserPatientProfile() {
+        User currentUser = authenticationService.getCurrentUser();
+        Patient patientProfile = patientRepository.findByUserId(currentUser.getId());
+        if (patientProfile == null)
+            throw new RuntimeException("Patient profile not found for user: ");
+        return patientProfile;
+    }
+
 }
