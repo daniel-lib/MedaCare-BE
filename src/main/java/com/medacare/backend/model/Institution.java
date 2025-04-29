@@ -56,6 +56,7 @@ public class Institution implements Serializable {
     private String registrationLicenseNumber;
     private Integer yearEstablished;
     private String aboutInstitution;
+    private Double rating = 0.0;
 
     // Contact Info
     @NotBlank(message = "Email is mandatory")
@@ -63,6 +64,7 @@ public class Institution implements Serializable {
     private String email; // Used for notifications and follow-ups
 
     private String primaryContactPersonName;
+    
     private String primaryContactPersonRole;
 
     // Services & Facilities
@@ -75,6 +77,7 @@ public class Institution implements Serializable {
     private List<Physician> physicians;
 
     //account that represents the providers
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name="admin_user_id", unique = true)
     private User adminUser;

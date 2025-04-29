@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -39,6 +41,8 @@ public class Physician implements Serializable {
     private Integer age;
     private Integer experience; // in years
     private String languagesSpoken;
+    
+    private double rating = 0.0d;
 
     @Transient
     @NotBlank(message = "Email address is mandatory")
@@ -56,6 +60,7 @@ public class Physician implements Serializable {
 
     private Boolean orgnanizationAffiliated;
 
+
     @OneToOne()
     @JoinColumn(name = "user_id")
     private User user;
@@ -65,6 +70,7 @@ public class Physician implements Serializable {
 
     private List<String> fileUploads; // Urls
     private List<Long> fileUploadsReference; // Ids
+    
 
     public Integer getAge() {
         if (dateOfBirth != null) {
@@ -85,5 +91,7 @@ public class Physician implements Serializable {
         this.dateOfBirth = dateOfBirth;
         this.age = getAge();
     }
+
+ 
 
 }
