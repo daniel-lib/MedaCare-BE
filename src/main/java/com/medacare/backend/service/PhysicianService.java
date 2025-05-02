@@ -3,11 +3,21 @@ package com.medacare.backend.service;
 import java.util.List;
 import java.util.Random;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import com.medacare.backend.dto.AccountRequestRejectionReasonDto;
+import com.medacare.backend.dto.StandardResponse;
 import com.medacare.backend.model.Institution;
+import com.medacare.backend.model.Institution.InstitutionRegistrationRequestStatus;
 import com.medacare.backend.model.Physician;
+import com.medacare.backend.model.Physician.AccountRequestStatus;
 import com.medacare.backend.model.Role;
 import com.medacare.backend.model.RoleEnum;
 import com.medacare.backend.model.User;
@@ -27,7 +37,8 @@ public class PhysicianService {
     private final RoleRepository roleRepository;
 
     public PhysicianService(PhysicianRepository physicianRepository, InstitutionRepository institutionRepository,
-    UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
+            UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder,
+            RoleRepository roleRepository) {
         this.physicianRepository = physicianRepository;
         this.institutionRepository = institutionRepository;
         this.userRepository = userRepository;
@@ -37,7 +48,7 @@ public class PhysicianService {
     }
 
     public List<Physician> getAllPhysicians() {
-        return physicianRepository.findAll();
+        return physicianRepository.findByAccountRequestStatus(AccountRequestStatus.APPROVED);
     }
 
     public Physician getPhysicianById(Long id) {
@@ -58,7 +69,7 @@ public class PhysicianService {
         existingPhysician.setAvailabilitySchedule(physician.getAvailabilitySchedule());
         existingPhysician.setOrgnanizationAffiliated(physician.getOrgnanizationAffiliated());
         existingPhysician.setHealthcareProvider(physician.getHealthcareProvider());
-        
+
         return physicianRepository.save(existingPhysician);
     }
 
@@ -70,7 +81,8 @@ public class PhysicianService {
 
     public List<Physician> getPhysiciansByHealthcareProvider(Long healthcareProviderId) {
         Institution institution = institutionRepository.findById(healthcareProviderId)
-                .orElseThrow(() -> new RuntimeException("Healthcare provider not found with id: " + healthcareProviderId));
+                .orElseThrow(
+                        () -> new RuntimeException("Healthcare provider not found with id: " + healthcareProviderId));
         return physicianRepository.findByHealthcareProvider(institution);
     }
 
@@ -93,7 +105,32 @@ public class PhysicianService {
         user.setPasswordResetRequired(true);
         user.setFirstName(physician.getFirstName());
         user.setLastName(physician.getLastName());
-        emailService.sendAutoAccountCreationEmail(user, generatedPassword, "An account has been created for you as a physician in the institution: " + institution.getName());
+        user.setFirstLogin(false);
+        emailService.sendAutoAccountCreationEmail(user, generatedPassword,
+                "An account has been created for you as a physician in the institution: " + institution.getName());
         return userRepository.save(user);
     }
+
+    public List<Physician> getAllPendingPhysician() {
+        return physicianRepository.findByAccountRequestStatus(AccountRequestStatus.PENDING);
+    }
+
+    public Physician approvepPhysician(Long id) {
+        Physician physician = physicianRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Physician not found with id: " + id));
+        physician.setAccountRequestStatus(AccountRequestStatus.APPROVED);
+        return physicianRepository.save(physician);
+    }
+
+    public Physician rejectPhysician(Long id, AccountRequestRejectionReasonDto rejectionReason) {
+        Physician physician = physicianRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Physician not found with id: " + id));
+        physician.setAccountRequestStatus(AccountRequestStatus.REJECTED);
+        physician.setDocumentInvalid(rejectionReason.isDocumentInvalid());
+        physician.setLicenseNotValid(rejectionReason.isLicenseNotValid());
+        physician.setIdentityUnverified(rejectionReason.isIdentityUnverified());
+        physician.setRejectionReasonNote(rejectionReason.getRejectionReasonNote());
+        return physicianRepository.save(physician);
+    }
+
 }

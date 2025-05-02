@@ -13,6 +13,7 @@ import java.util.Random;
 
 import org.springframework.stereotype.Service;
 
+import com.medacare.backend.dto.AccountRequestRejectionReasonDto;
 import com.medacare.backend.model.Institution;
 import com.medacare.backend.model.RoleEnum;
 import com.medacare.backend.model.Institution.InstitutionRegistrationRequestStatus;
@@ -161,10 +162,14 @@ public class InstitutionService {
         return userRepository.save(user);
     }
 
-    public Institution rejectInstitution(Long id) {
+    public Institution rejectInstitution(Long id, AccountRequestRejectionReasonDto rejectionReason) {
         Institution institution = institutionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Institution not found with id: " + id));
         institution.setRequestStatus(InstitutionRegistrationRequestStatus.REJECTED);
+        institution.setDocumentInvalid(rejectionReason.isDocumentInvalid());
+        institution.setLicenseNotValid(rejectionReason.isLicenseNotValid());
+        institution.setIdentityUnverified(rejectionReason.isIdentityUnverified());
+        institution.setRejectionReasonNote(rejectionReason.getRejectionReasonNote());
         return institutionRepository.save(institution);
     }
 
@@ -177,7 +182,7 @@ public class InstitutionService {
 
     public List<Physician> getInstitutionPhysicians() {
         if(authenticationService.getCurrentUser().getInstitutionId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"User is not associated with any institution.");
+            throw new RuntimeException("User is not associated with any institution.");
         }
         
         long institutionId = authenticationService.getCurrentUser().getInstitutionId();

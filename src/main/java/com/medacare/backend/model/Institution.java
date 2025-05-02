@@ -64,7 +64,7 @@ public class Institution implements Serializable {
     private String email; // Used for notifications and follow-ups
 
     private String primaryContactPersonName;
-    
+
     private String primaryContactPersonRole;
 
     // Services & Facilities
@@ -76,10 +76,10 @@ public class Institution implements Serializable {
     @OneToMany(mappedBy = "healthcareProvider")
     private List<Physician> physicians;
 
-    //account that represents the providers
+    // account that represents the providers
     @JsonIgnore
     @OneToOne
-    @JoinColumn(name="admin_user_id", unique = true)
+    @JoinColumn(name = "admin_user_id", unique = true)
     private User adminUser;
 
     @CreationTimestamp
@@ -90,14 +90,18 @@ public class Institution implements Serializable {
     @Enumerated(EnumType.STRING)
     private InstitutionRegistrationRequestStatus requestStatus;
 
+    private boolean documentInvalid;
+    private boolean licenseNotValid;
+    private boolean identityUnverified;
+    private boolean professionallyQualified;
+    private String rejectionReasonNote;
 
     @Transient
-    private Map<String, String> fileUploads =  new HashMap<>(); 
+    private Map<String, String> fileUploads = new HashMap<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "fileOwner")
-    private List<InstitutionFile> uploadedFiles; 
-
+    private List<InstitutionFile> uploadedFiles;
 
     public enum InstitutionRegistrationRequestStatus {
         PENDING,
