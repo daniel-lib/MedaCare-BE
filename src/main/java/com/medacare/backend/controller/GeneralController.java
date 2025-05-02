@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.medacare.backend.config.ApiPaths;
+import com.medacare.backend.config.FixedVars;
 
-@RequestMapping(ApiPaths.BASE_API_VERSION+"/")
+@RequestMapping(FixedVars.BASE_API_VERSION+"/")
 @RestController
 @CrossOrigin
 public class GeneralController {

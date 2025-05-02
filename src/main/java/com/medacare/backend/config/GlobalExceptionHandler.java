@@ -3,6 +3,7 @@ package com.medacare.backend.config;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 
+import java.io.IOException;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -122,6 +123,14 @@ public class GlobalExceptionHandler {
         if(exception instanceof HttpRequestMethodNotSupportedException){
             statusCode = 403;
             response.setMessage("Method not allowed");
+        }
+        if(exception instanceof  RuntimeException){
+            statusCode = 400;            
+            response.setMessage(exception.getMessage());
+        }
+        if(exception instanceof IOException){
+            statusCode = 400;
+            response.setMessage(exception.getMessage());
         }
 
         return ResponseEntity.status(statusCode)

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.medacare.backend.config.ApiPaths;
+import com.medacare.backend.config.FixedVars;
 import com.medacare.backend.dto.StandardResponse;
 import com.medacare.backend.model.Interaction;
 import com.medacare.backend.service.InteractionService;
@@ -16,7 +16,7 @@ import com.medacare.backend.service.InteractionService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping(ApiPaths.BASE_API_VERSION + "/interactions")
+@RequestMapping(FixedVars.BASE_API_VERSION + "/interactions")
 public class InteractionController {
 
     public final InteractionService interactionService;
