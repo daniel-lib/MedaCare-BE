@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -41,7 +43,7 @@ public class Physician implements Serializable {
     private Integer age;
     private Integer experience; // in years
     private String languagesSpoken;
-    
+
     private double rating = 0.0d;
 
     @Transient
@@ -58,9 +60,15 @@ public class Physician implements Serializable {
     @Transient
     private String lastName;
 
+    @Pattern(regexp = "^\\+251\\d{9}$", message = "Invalid phone number")
+    private String phoneNumber;
+
     private Boolean orgnanizationAffiliated;
 
+    @Enumerated(EnumType.STRING)
+    private AccountRequestStatus accountRequestStatus = AccountRequestStatus.PENDING;
 
+    @JsonIgnore
     @OneToOne()
     @JoinColumn(name = "user_id")
     private User user;
@@ -70,7 +78,12 @@ public class Physician implements Serializable {
 
     private List<String> fileUploads; // Urls
     private List<Long> fileUploadsReference; // Ids
-    
+
+    private boolean documentInvalid;
+    private boolean licenseNotValid;
+    private boolean identityUnverified;
+    private boolean professionallyQualified;
+    private String rejectionReasonNote;
 
     public Integer getAge() {
         if (dateOfBirth != null) {
@@ -92,6 +105,18 @@ public class Physician implements Serializable {
         this.age = getAge();
     }
 
- 
+    public String getFirstName() {
+        return this.user != null ? this.user.getFirstName() : null;
+    }
+
+    public String getLastName() {
+        return this.user != null ? this.user.getLastName() : null;
+    }
+
+    public enum AccountRequestStatus {
+        PENDING,
+        APPROVED,
+        REJECTED
+    }
 
 }

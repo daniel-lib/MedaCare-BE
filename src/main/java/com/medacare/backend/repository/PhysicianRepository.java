@@ -19,7 +19,8 @@ public interface PhysicianRepository extends JpaRepository<Physician, Long> {
     List<Physician> findAll();
 
     List<Physician> findByAccountRequestStatusNot(AccountRequestStatus status);
-
+    Physician findByUserId(long userId);
+    boolean existsByUserId(long userId);
 
 
     // Page <Physician> findAllOrderByRatingDesc(Pageable p);

@@ -5,7 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.medacare.backend.config.ApiPaths;
+import com.medacare.backend.config.FixedVars;
+import com.medacare.backend.dto.AccountRequestRejectionReasonDto;
 import com.medacare.backend.dto.StandardResponse;
 import com.medacare.backend.model.Institution;
 import com.medacare.backend.service.InstitutionService;
@@ -17,15 +18,16 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 import com.medacare.backend.model.Physician;
+import com.medacare.backend.model.Physician.AccountRequestStatus;
 import com.medacare.backend.repository.PhysicianRepository;
 import com.medacare.backend.repository.UserRepository;
 
 @RestController
-@RequestMapping(ApiPaths.BASE_API_VERSION + "/institutions")
+@RequestMapping(FixedVars.BASE_API_VERSION + "/institutions")
 @CrossOrigin
 public class InstitutionController {
 
-    private final PhysicianRepository physicianRepository;
+        private final PhysicianRepository physicianRepository;
 
         private final InstitutionService institutionService;
         private final ResponseService responseService;
@@ -33,7 +35,8 @@ public class InstitutionController {
         private final PhysicianService physicianService;
 
         public InstitutionController(InstitutionService institutionService, ResponseService responseService,
-                        UserRepository userRepository, PhysicianService physicianService, PhysicianRepository physicianRepository) {
+                        UserRepository userRepository, PhysicianService physicianService,
+                        PhysicianRepository physicianRepository) {
                 this.institutionService = institutionService;
                 this.responseService = responseService;
                 this.userRepository = userRepository;
@@ -43,7 +46,7 @@ public class InstitutionController {
 
         @PreAuthorize("hasRole('ADMIN')")
         @GetMapping("/pending/requests")
-        public ResponseEntity<StandardResponse> getAllInstitutions() {
+        public ResponseEntity<StandardResponse> getPendingInstitutions() {
                 List<Institution> institutions = institutionService.getAllPendingInstitutions();
                 return ResponseEntity.status(HttpStatus.OK)
                                 .body(responseService.createStandardResponse("success", institutions,
@@ -52,11 +55,22 @@ public class InstitutionController {
 
         @PreAuthorize("hasRole('ADMIN')")
         @PutMapping("/requests/{id}/{status}")
-        public ResponseEntity<StandardResponse> getAllInstitutions(@PathVariable long id, @PathVariable String status) {
+        public ResponseEntity<StandardResponse> updateRequestStatus(@PathVariable long id, @PathVariable String status,
+                        @RequestBody(required = true) AccountRequestRejectionReasonDto rejectionReason) {
                 if (status.equalsIgnoreCase("approved")) {
                         institutionService.approveInstitution(id);
                 } else if (status.equalsIgnoreCase("rejected")) {
-                        institutionService.rejectInstitution(id);
+                        if (rejectionReason == null ||
+                                        (rejectionReason.isDocumentInvalid() &&
+                                                        rejectionReason.isIdentityUnverified() &&
+                                                        rejectionReason.isLicenseNotValid() &&
+                                                        rejectionReason.isProfessionallyQualified() &&
+                                                        rejectionReason.getRejectionReasonNote().isBlank())) {
+                                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                                .body(responseService.createStandardResponse("error", null,
+                                                                "Rejection reason is required", null));
+                        }
+                        institutionService.rejectInstitution(id, rejectionReason);
                 } else {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                         .body(responseService.createStandardResponse("error", null,
@@ -139,15 +153,14 @@ public class InstitutionController {
                 }
 
                 Institution institution = institutionService.getCurrentInstitution();
-                
-        System.out.println(":::::::::: " + institution.getId() + " " + institution.getName());
-                
+
                 physician.setHealthcareProvider(institution);
 
                 physicianService.createInstitutionPhysicianAccount(physician, institution);
 
                 physician.setOrgnanizationAffiliated(true);
-               physicianRepository.save(physician);
+                physician.setAccountRequestStatus(AccountRequestStatus.APPROVED);
+                physicianRepository.save(physician);
 
                 return ResponseEntity.status(HttpStatus.CREATED)
                                 .body(responseService.createStandardResponse("success", physician,
