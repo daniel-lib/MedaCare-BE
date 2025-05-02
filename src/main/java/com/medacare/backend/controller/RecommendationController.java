@@ -12,83 +12,50 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.medacare.backend.config.ApiPaths;
+import com.medacare.backend.config.FixedVars;
 import com.medacare.backend.model.Institution;
 import com.medacare.backend.model.Physician;
 import com.medacare.backend.repository.InstitutionRepository;
 import com.medacare.backend.repository.PhysicianRepository;
 import com.medacare.backend.service.AI_AssistanceService;
 import com.medacare.backend.service.PatientService;
+import com.medacare.backend.service.RecommendationService;
 
 @RestController
-@RequestMapping(ApiPaths.BASE_API_VERSION + "/recommendations")
+@RequestMapping(FixedVars.BASE_API_VERSION + "/recommendations")
 public class RecommendationController {
 
     private final AI_AssistanceService assistanceService;
     private final InstitutionRepository institutionRepository;
     private final PhysicianRepository physicianRepository;
     private final PatientService patientService;
+    private final RecommendationService recommendationService;
 
     public RecommendationController(AI_AssistanceService assistanceService,
             InstitutionRepository institutionRepository, PhysicianRepository physicianRepository,
-            PatientService patientService) {
+            PatientService patientService, RecommendationService recommendationService) {
         this.assistanceService = assistanceService;
         this.institutionRepository = institutionRepository;
         this.physicianRepository = physicianRepository;
         this.patientService = patientService;
+        this.recommendationService = recommendationService;
     }
 
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasRole('PATIENT')")
     @GetMapping("/specialty")
     public List<String> recommendSpecialization() {
-
-        return new ArrayList<>();
+        return recommendationService.recommendSpecialization();
     }
 
     @PreAuthorize("hasRole('PATIENT')")
     @GetMapping("/institution")
     public List<Institution> recommendInstitution() {
-
-        List<Institution> institutionBySpecialization = institutionRepository
-                .findByOfferedSpecializationsIn(patientService.getCurrentUserPatientProfile().getSpecializationPreference());
-        List<Institution> allInstitutions = institutionRepository.findAllByOrderByRatingDesc();
-        Random random = new Random();
-        Set<Institution> recommendedInstitutions = new HashSet<>();
-
-        recommendedInstitutions.addAll(institutionBySpecialization);
-        
-        while (recommendedInstitutions.size() < 8 && recommendedInstitutions.size() < allInstitutions.size()) {
-            int randomIndex = random.nextInt(0, allInstitutions.size());
-            Institution randomInstitution = allInstitutions.get(randomIndex);
-            if (!recommendedInstitutions.contains(randomInstitution)) {
-                recommendedInstitutions.add(randomInstitution);
-            }
-        }
-        List<Institution> recommendedInstitutionsList = new ArrayList<>();
-        recommendedInstitutionsList.addAll(recommendedInstitutions);
-        return recommendedInstitutionsList;
+        return recommendationService.recommendInstitution();
     }
 
     @PreAuthorize("hasRole('PATIENT')")
     @GetMapping("/physician")
     public List<Physician> recommendPhysician() {
-        List<Physician> physicianBySpecialization = physicianRepository
-                .findBySpecializationIn(patientService.getCurrentUserPatientProfile().getSpecializationPreference());
-        List<Physician> allPhysicians = physicianRepository.findAllByOrderByRatingDesc();
-        Random random = new Random();
-        Set<Physician> recommendedPhysicians = new HashSet<>();
-
-        recommendedPhysicians.addAll(physicianBySpecialization);
-        
-        while (recommendedPhysicians.size() < 8 && recommendedPhysicians.size() < allPhysicians.size()) {
-            int randomIndex = random.nextInt(0, allPhysicians.size());
-            Physician randomPhysician = allPhysicians.get(randomIndex);
-            if (!recommendedPhysicians.contains(randomPhysician)) {
-                recommendedPhysicians.add(randomPhysician);
-            }
-        }
-        List<Physician> recommendedPhysiciansList = new ArrayList<>();
-        recommendedPhysiciansList.addAll(recommendedPhysicians);
-        return recommendedPhysiciansList;
+        return recommendationService.recommendPhysician();
     }
 }

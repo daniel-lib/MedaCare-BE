@@ -2,7 +2,9 @@ package com.medacare.backend.service;
 
 import com.medacare.backend.dto.LoginUserDto;
 import com.medacare.backend.dto.RegisterUserDto;
+import com.medacare.backend.model.Role;
 import com.medacare.backend.model.User;
+import com.medacare.backend.model.User.UserOrigin;
 import com.medacare.backend.repository.UserRepository;
 
 import java.util.List;
@@ -18,9 +20,11 @@ import org.springframework.validation.BindingResult;
 @Service
 public class UserService {
     private final UserRepository userRepo;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepo) {
+    public UserService(UserRepository userRepo, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAllUsers() {
@@ -28,5 +32,18 @@ public class UserService {
     }
     public User getUserById(Long id) {
         return userRepo.findById(id).orElse(null);
+    }
+
+    public User createUser(String email, String firstName, String lastName, Role role, UserOrigin origin) {
+        User user = new User();
+        user.setPassword(passwordEncoder.encode("12345678"));
+        user.setEmail(email);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setRole(role);
+        user.setVerified(true);
+        user.setOrigin(origin);
+        // user = userRepo.save(user);
+        return userRepo.save(user);
     }
 }

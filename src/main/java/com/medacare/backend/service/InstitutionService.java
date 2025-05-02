@@ -56,7 +56,7 @@ public class InstitutionService {
     }
 
     public List<Institution> getAllInstitutions() {
-        return institutionRepository.findAll();
+        return institutionRepository.findByRequestStatus(InstitutionRegistrationRequestStatus.APPROVED);
     }
 
     public Institution getInstitutionById(Long id) {

@@ -38,11 +38,11 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                         // "/swagger-ui.html").permitAll()
-                        .requestMatchers(ApiPaths.BASE_API_VERSION + "/auth/**", "/api/hello", "/api-docs/**",
+                        .requestMatchers(FixedVars.BASE_API_VERSION + "/auth/**", "/api/hello", "/api-docs/**",
                                 "/swagger-ui/**","/",
                                 "/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/swagger-ui/index.html/", "/swagger-ui.html","/api/v1/example/data",
-                                ApiPaths.BASE_API_VERSION+"/institutions", ApiPaths.BASE_API_VERSION+"/institutions/", ApiPaths.BASE_API_VERSION+"/assistance/**")
+                                FixedVars.BASE_API_VERSION+"/institutions", FixedVars.BASE_API_VERSION+"/institutions/", FixedVars.BASE_API_VERSION+"/assistance/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

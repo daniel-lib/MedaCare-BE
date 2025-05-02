@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.medacare.backend.config.ApiPaths;
+import com.medacare.backend.config.FixedVars;
 import com.medacare.backend.dto.StandardResponse;
 import com.medacare.backend.model.Patient;
 import com.medacare.backend.service.PatientService;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping(ApiPaths.BASE_API_VERSION + "/patients")
+@RequestMapping(FixedVars.BASE_API_VERSION + "/patients")
 @CrossOrigin
 public class PatientController {
     private final PatientService patientService;

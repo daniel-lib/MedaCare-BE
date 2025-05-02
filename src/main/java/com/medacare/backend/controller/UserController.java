@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.medacare.backend.config.ApiPaths;
+import com.medacare.backend.config.FixedVars;
 import com.medacare.backend.model.User;
 import com.medacare.backend.service.AuthenticationService;
 import com.medacare.backend.service.UserService;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
-@RequestMapping(ApiPaths.BASE_API_VERSION+"/users")
+@RequestMapping(FixedVars.BASE_API_VERSION+"/users")
 @CrossOrigin
 public class UserController {
 
