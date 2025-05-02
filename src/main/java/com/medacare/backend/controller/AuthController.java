@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.medacare.backend.config.ApiPaths;
+import com.medacare.backend.config.FixedVars;
 import com.medacare.backend.dto.LoginUserDto;
+import com.medacare.backend.dto.PasswordResetDto;
 import com.medacare.backend.dto.PasswordUpdateDto;
 import com.medacare.backend.dto.RegisterUserDto;
 import com.medacare.backend.dto.StandardResponse;
@@ -24,25 +25,29 @@ import com.medacare.backend.security.LoginResponse;
 import com.medacare.backend.service.AuthenticationService;
 import com.medacare.backend.service.JwtService;
 import com.medacare.backend.service.ResponseService;
-
+import com.medacare.backend.service.UserService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @CrossOrigin
-@RequestMapping(ApiPaths.BASE_API_VERSION + "/auth")
+@RequestMapping(FixedVars.BASE_API_VERSION + "/auth")
 public class AuthController {
+
+    private final UserService userService;
     private final UserRepository userRepo;
     private final AuthenticationService authenticationService;
     private final ResponseService responseService;
 
     public AuthController(UserRepository userRepo, AuthenticationService authenticationService,
-            ResponseService responseService) {
+            ResponseService responseService, UserService userService) {
         this.userRepo = userRepo;
         this.authenticationService = authenticationService;
         this.responseService = responseService;
+        this.userService = userService;
     }
 
     @PostMapping(value = "/signup", consumes = "application/json")
@@ -105,6 +110,53 @@ public class AuthController {
                             null));
         }
         return authenticationService.sendVerificationEmail(user);
+    }
+
+    @PostMapping("/verify-verification-code")
+    public ResponseEntity<StandardResponse> verifyVerificationCode(@RequestParam("email") String email,
+            @RequestParam("code") String verificationCode) {
+        Optional<User> user = userRepo.findByEmail(email);
+        if (!user.isPresent())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseService.createStandardResponse("error",
+                    email, "There is no registered user with that email", null));
+
+        if (user.get().getVerificationCode() == null || !user.get().getVerificationCode().equals(verificationCode))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null, "Invalid verification code", null));
+        user.get().setVerificationCode(null);
+        userRepo.save(user.get());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(responseService.createStandardResponse("success", null, "Account ownership verified",
+                        null));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<StandardResponse> resetPasswordRequest(@RequestParam("email") String email) {
+        Optional<User> optionalUser = userRepo.findByEmail(email);
+        if (!optionalUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null, "User not found", null));
+        }
+        User user = optionalUser.get();
+        if (!user.isVerified()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null, "User is not verified", null));
+        }
+        return authenticationService.sendPasswordResetEmail(user);
+    }
+
+    @PatchMapping("/password-reset")
+    public ResponseEntity<StandardResponse> resetPasswordRequest(@Valid @RequestBody PasswordResetDto passwordResetData) {
+        Optional<User> optionalUser = userRepo.findByEmail(passwordResetData.getEmail());
+        if (!optionalUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(responseService.createStandardResponse("error", null, "Email address is not found", null));
+        }
+        User user = optionalUser.get();
+        user.setPassword(new BCryptPasswordEncoder().encode(passwordResetData.getPassword()));
+        userRepo.save(user);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(responseService.createStandardResponse("success", null, "Password reset successfully", null));
     }
 
     @PreAuthorize("isAuthenticated()")

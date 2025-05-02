@@ -104,7 +104,9 @@ public class AuthenticationService {
     }
 
     public ResponseEntity<StandardResponse> sendVerificationEmail(User user) {
-        String verificationEmailResult = emailService.sendVerificationEmail(user);
+        String verificationEmailResult = emailService.sendVerificationEmail(user, "MedaCare Email Verification Code",
+                "Thank you for signing up. Please verify your email address, by entering the code below.",
+                "Welcome to MedaCare");
         if (verificationEmailResult.equals("Error sending email")) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(responseService.createStandardResponse("error", null,
@@ -115,6 +117,23 @@ public class AuthenticationService {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(responseService.createStandardResponse("success", savedUser,
                             "Verification email sent.", null));
+        }
+    }
+
+    public ResponseEntity<StandardResponse> sendPasswordResetEmail(User user) {
+        String verificationEmailResult = emailService.sendVerificationEmail(user, "MedaCare Email Verification Code",
+                "You requested for password reset. Please verify you own the account by entering the code below.",
+                "MedaCare Password Reset");
+        if (verificationEmailResult.equals("Error sending email")) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(responseService.createStandardResponse("error", null,
+                            "Could not send email. Make sure you've typed valid email.", null));
+        } else {
+            user.setVerificationCode(verificationEmailResult);
+            User savedUser = userRepository.save(user);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(responseService.createStandardResponse("success", null,
+                            "Password reset email sent.", null));
         }
     }
 
