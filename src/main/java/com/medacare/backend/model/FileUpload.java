@@ -1,7 +1,7 @@
 package com.medacare.backend.model;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -9,10 +9,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class FileUpload implements Serializable{
@@ -39,7 +41,7 @@ public class FileUpload implements Serializable{
     // private Long fileOwner; //change to OBJECT...Postibly User type
 
     @CreationTimestamp
-    private LocalDateTime uploadDate;
+    private OffsetDateTime uploadDate;
     @UpdateTimestamp
-    private LocalDateTime updateDate;
+    private OffsetDateTime updateDate;
 }

@@ -103,11 +103,41 @@
         </dependency>
 
         <!-- Cloudinary -->
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http5</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+<!-- 
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http45</artifactId>
+            <version>2.2.0</version>
+        </dependency> -->
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-taglib</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>2.2.4</version>
+        </dependency>
+        <!-- Cloudinary -->
 
          <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
         </dependency>
+
+        <!-- Chapa -->
+        <dependency>
+            <groupId>io.github.yaphet17</groupId>
+            <artifactId>Chapa</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+        <!-- Chapa -->
     </dependencies>
     
     <dependencyManagement>
