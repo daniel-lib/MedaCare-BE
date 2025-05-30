@@ -2,6 +2,7 @@ package com.medacare.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.medacare.backend.repository.UserRepository;
 
 @Configuration
+@EnableAsync
 public class ApplicationConfiguration {
     private final UserRepository userRepository;
 
