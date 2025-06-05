@@ -30,18 +30,22 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepo.findAll();
     }
+
     public User getUserById(Long id) {
         return userRepo.findById(id).orElse(null);
     }
 
-    public User createUser(String email, String firstName, String lastName, Role role, UserOrigin origin) {
+    public User createUser(String email, String firstName, String lastName, Role role, UserOrigin origin,
+            boolean verified, boolean firstLogin) {
         User user = new User();
         user.setPassword(passwordEncoder.encode("12345678"));
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setRole(role);
-        user.setVerified(true);
+        user.setVerified(verified);
+        user.setFirstLogin(firstLogin);
+
         user.setOrigin(origin);
         // user = userRepo.save(user);
         return userRepo.save(user);

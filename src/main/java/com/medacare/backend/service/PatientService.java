@@ -2,6 +2,7 @@ package com.medacare.backend.service;
 
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,13 @@ public class PatientService {
     }
 
     public ResponseEntity<StandardResponse> savePatientDetail(Patient patient) {
+
         try {
+
+            User user = userRepository.findById(authenticationService.getCurrentUser().getId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            patient.setUser(user);
+
             if (patientRepository.existsByUserId(authenticationService.getCurrentUser().getId())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseService.createStandardResponse(
                         "error",
@@ -51,6 +58,8 @@ public class PatientService {
                     .orElseThrow(() -> new RuntimeException("User not found"));
             // patient.setUser(patientUser);
             Patient savedPatient = patientRepository.save(patient);
+            user.setFirstLogin(false);
+            userRepository.save(user);
             StandardResponse response = responseService.createStandardResponse("success", savedPatient,
                     "Patient registered successfully", null);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -97,7 +106,7 @@ public class PatientService {
         patient.setHeightInMeters(heightInMeters);
         patient.setWeightInKg(weightInKg);
         patient.setGender(gender);
-        
+
         userRepository.save(userFromDb);
         String patientProfile = "The patient is " + patient.getAge() + " years old " + patient.getGender()
                 + " and has the following medical history: "
@@ -105,6 +114,10 @@ public class PatientService {
                 + patient.getPastDiagnosis() + ". blood type: " + patient.getBloodType();
         patient.setSpecializationPreference(aiAssistanceService.searchSpecialization(patientProfile));
         return patientRepository.save(patient);
+    }
+
+    public List<Patient> getAllPatients() {
+        return patientRepository.findAll();
     }
 
 }

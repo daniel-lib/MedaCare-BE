@@ -1,7 +1,7 @@
 package com.medacare.backend.model;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -13,10 +13,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @Entity
 public class ChatMessage implements Serializable {
@@ -31,11 +33,11 @@ public class ChatMessage implements Serializable {
     private User receiver;
 
     @CreationTimestamp
-    private LocalDateTime sentDate;
+    private OffsetDateTime sentDate;
     @UpdateTimestamp
-    private LocalDateTime updateDate;
+    private OffsetDateTime updateDate;
 
-    private LocalDateTime readDate;
+    private OffsetDateTime readDate;
 
     @Enumerated(EnumType.STRING)
     private MessageViewStatus viewStatus;

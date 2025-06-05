@@ -9,12 +9,18 @@ import com.medacare.backend.config.FixedVars;
 import com.medacare.backend.dto.AccountRequestRejectionReasonDto;
 import com.medacare.backend.dto.StandardResponse;
 import com.medacare.backend.model.Institution;
+import com.medacare.backend.model.Institution.InstitutionRegistrationRequestStatus;
+import com.medacare.backend.model.Patient;
+import com.medacare.backend.service.InstitutionPhysicianService;
 import com.medacare.backend.service.InstitutionService;
 import com.medacare.backend.service.PhysicianService;
 import com.medacare.backend.service.ResponseService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.medacare.backend.model.Physician;
@@ -22,6 +28,7 @@ import com.medacare.backend.model.Physician.AccountRequestStatus;
 import com.medacare.backend.repository.PhysicianRepository;
 import com.medacare.backend.repository.UserRepository;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(FixedVars.BASE_API_VERSION + "/institutions")
 @CrossOrigin
@@ -33,24 +40,16 @@ public class InstitutionController {
         private final ResponseService responseService;
         private final UserRepository userRepository;
         private final PhysicianService physicianService;
-
-        public InstitutionController(InstitutionService institutionService, ResponseService responseService,
-                        UserRepository userRepository, PhysicianService physicianService,
-                        PhysicianRepository physicianRepository) {
-                this.institutionService = institutionService;
-                this.responseService = responseService;
-                this.userRepository = userRepository;
-                this.physicianService = physicianService;
-                this.physicianRepository = physicianRepository;
-        }
+        private final InstitutionPhysicianService institutionPhysicianService;
 
         @PreAuthorize("hasRole('ADMIN')")
         @GetMapping("/pending/requests")
         public ResponseEntity<StandardResponse> getPendingInstitutions() {
                 List<Institution> institutions = institutionService.getAllPendingInstitutions();
                 return ResponseEntity.status(HttpStatus.OK)
-                                .body(responseService.createStandardResponse("success", institutions,
-                                                "Institutions retrieved successfully", null));
+                                .body(responseService.createStandardResponse("success",
+                                                institutions == null ? new ArrayList<>() : institutions,
+                                                "Institutions retrieved", null));
         }
 
         @PreAuthorize("hasRole('ADMIN')")
@@ -78,7 +77,7 @@ public class InstitutionController {
                 }
                 return ResponseEntity.status(HttpStatus.OK)
                                 .body(responseService.createStandardResponse("success", null,
-                                                "Institution request status updated successfully. Generated user account has been sent to provided email address",
+                                                "Institution request status updated. Generated user account has been sent to provided email address",
                                                 null));
         }
 
@@ -87,27 +86,39 @@ public class InstitutionController {
         public ResponseEntity<StandardResponse> getAllApprovedInstitutions() {
                 List<Institution> institutions = institutionService.getAllApprovedInstitutions();
                 return ResponseEntity.status(HttpStatus.OK)
-                                .body(responseService.createStandardResponse("success", institutions,
-                                                "Institutions retrieved successfully", null));
+                                .body(responseService.createStandardResponse("success",
+                                                institutions == null ? new ArrayList<>() : institutions,
+                                                "Institutions retrieved", null));
         }
 
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("isAuthenticated()")
+        @GetMapping("/all")
+        public ResponseEntity<StandardResponse> getAllInstitutions() {
+                List<Institution> institutions = institutionService.getAllInstitutions();
+                return ResponseEntity.status(HttpStatus.OK)
+                                .body(responseService.createStandardResponse("success",
+                                                institutions == null ? new ArrayList<>() : institutions,
+                                                "Institutions retrieved", null));
+        }
+
+        @PreAuthorize("isAuthenticated()")
         @GetMapping("/{id}")
         public ResponseEntity<StandardResponse> getInstitutionById(@PathVariable Long id) {
                 Institution institution = institutionService.getInstitutionById(id);
                 return ResponseEntity.status(HttpStatus.OK)
-                                .body(responseService.createStandardResponse("success", institution,
-                                                "Institution retrieved successfully", null));
+                                .body(responseService.createStandardResponse("success",
+                                                institution == null || institution
+                                                                .getRequestStatus() != InstitutionRegistrationRequestStatus.APPROVED
+                                                                                ? null
+                                                                                : institution,
+                                                "Institution retrieved", null));
         }
 
         @PreAuthorize("permitAll()")
-        @PostMapping
+        @PostMapping(consumes = { "multipart/form-data" })
         public ResponseEntity<StandardResponse> submitInstitutionRegistrationRequest(
-                        @Valid @RequestBody Institution institution) {
-                Institution createdInstitution = institutionService.createInstitution(institution);
-                return ResponseEntity.status(HttpStatus.CREATED)
-                                .body(responseService.createStandardResponse("success", createdInstitution,
-                                                "Institution registration request submitted successfully", null));
+                        @Valid @ModelAttribute Institution institution) throws IOException {
+                return institutionService.createInstitution(institution);
         }
 
         @PreAuthorize("hasRole('ADMIN')")
@@ -117,7 +128,7 @@ public class InstitutionController {
                 Institution updatedInstitution = institutionService.updateInstitution(id, institution);
                 return ResponseEntity.status(HttpStatus.OK)
                                 .body(responseService.createStandardResponse("success", updatedInstitution,
-                                                "Institution updated successfully", null));
+                                                "Institution updated", null));
         }
 
         @PreAuthorize("hasRole('ADMIN')")
@@ -126,7 +137,7 @@ public class InstitutionController {
                 institutionService.deleteInstitution(id);
                 return ResponseEntity.status(HttpStatus.NO_CONTENT)
                                 .body(responseService.createStandardResponse("success", null,
-                                                "Institution deleted successfully", null));
+                                                "Institution deleted", null));
         }
 
         @PreAuthorize("hasRole('ORG_ADMIN')")
@@ -136,35 +147,49 @@ public class InstitutionController {
                 return institution;
         }
 
-        @PreAuthorize("hasRole('ORG_ADMIN')")
+        @PreAuthorize("isAuthenticated()")
         @GetMapping("/physicians")
-        public List<Physician> getInstitutionPhysicians() {
+        public ResponseEntity<StandardResponse> getInstitutionPhysicians() {
                 List<Physician> physician = institutionService.getInstitutionPhysicians();
-                return physician;
+                return ResponseEntity.status(HttpStatus.OK)
+                                .body(responseService.createStandardResponse("success",
+                                                physician == null ? new ArrayList<>() : physician,
+                                                "Physicians retrieved", null));
+        }
+
+        @PreAuthorize("isAuthenticated()")
+        @GetMapping("/{institutionId}/physicians")
+        public ResponseEntity<StandardResponse> getInstitutionPhysicians(@PathVariable("institutionId") Long institutionId) {
+                List<Physician> physician = institutionPhysicianService.getInstitutionPhysiciansById(institutionId);
+                return ResponseEntity.status(HttpStatus.OK)
+                                .body(responseService.createStandardResponse("success",
+                                                physician == null ? new ArrayList<>() : physician,
+                                                "Physicians retrieved", null));
         }
 
         @PreAuthorize("hasRole('ORG_ADMIN')")
-        @PostMapping("/physicians")
-        public ResponseEntity<StandardResponse> addPhysician(@RequestBody Physician physician) {
+        @PostMapping(value = "/physicians", consumes = { "multipart/form-data" })
+        public ResponseEntity<StandardResponse> addPhysician(@ModelAttribute Physician physician) throws IOException {
                 if (userRepository.findByEmail(physician.getEmail()).isPresent()) {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                         .body(responseService.createStandardResponse("error", null,
                                                         "Physician with this email already exists", null));
                 }
 
-                Institution institution = institutionService.getCurrentInstitution();
-
-                physician.setHealthcareProvider(institution);
-
-                physicianService.createInstitutionPhysicianAccount(physician, institution);
-
-                physician.setOrgnanizationAffiliated(true);
-                physician.setAccountRequestStatus(AccountRequestStatus.APPROVED);
-                physicianRepository.save(physician);
-
-                return ResponseEntity.status(HttpStatus.CREATED)
-                                .body(responseService.createStandardResponse("success", physician,
-                                                "Physician added successfully", null));
+                return physicianService.addInstitutionPhysician(physician);
         }
+        
+        @PreAuthorize("isAuthenticated()")
+        @GetMapping("/patients")
+        public ResponseEntity<StandardResponse> getInstitutionPatients() {
+                return ResponseEntity.status(HttpStatus.OK)
+                                .body(responseService.createStandardResponse("success",
+                                                institutionService.getInstitutionPatients(),
+                                                "Institution patients retrieved", null));
+        }
+
+        
+
+        
 
 }

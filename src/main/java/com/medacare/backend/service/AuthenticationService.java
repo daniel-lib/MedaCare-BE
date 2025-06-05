@@ -52,7 +52,7 @@ public class AuthenticationService {
     }
 
     public ResponseEntity<StandardResponse> signup(@Valid @RequestBody RegisterUserDto inputData) {
-        if (userRepository.existsByEmail(inputData.getEmail())) {
+        if (userRepository.existsByEmailIgnoreCase(inputData.getEmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(responseService.createStandardResponse(
                             "error",
@@ -88,7 +88,7 @@ public class AuthenticationService {
         User user = new User();
         user.setFirstName(inputData.getFirstName());
         user.setLastName(inputData.getLastName());
-        user.setEmail(inputData.getEmail());
+        user.setEmail(inputData.getEmail().toLowerCase());
         try {
             user.setOrigin(User.UserOrigin.valueOf(inputData.getOrigin()));
         } catch (IllegalArgumentException e) {
@@ -138,12 +138,14 @@ public class AuthenticationService {
     }
 
     public User authenticate(LoginUserDto inputData) {
+        System.out.println("Authenticating user: " + inputData.getEmail());
+        System.out.println("Password: " + inputData.getEmail().toLowerCase());
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        inputData.getEmail(),
+                        inputData.getEmail().toLowerCase(),
                         inputData.getPassword()));
 
-        return userRepository.findByEmail(inputData.getEmail())
+        return userRepository.findByEmail(inputData.getEmail().toLowerCase())
                 .orElseThrow();
     }
 
