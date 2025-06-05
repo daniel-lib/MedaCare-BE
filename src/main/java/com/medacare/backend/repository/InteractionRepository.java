@@ -10,6 +10,9 @@ import com.medacare.backend.model.Interaction;
 import com.medacare.backend.model.Physician;
 import com.medacare.backend.model.User;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
+@Hidden
 @Repository
 public interface InteractionRepository extends JpaRepository<Interaction, Long> {
    List<Interaction> findAll();

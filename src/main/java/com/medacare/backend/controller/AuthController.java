@@ -131,7 +131,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<StandardResponse> resetPasswordRequest(@RequestParam("email") String email) {
+    public ResponseEntity<StandardResponse> resetForgottenPasswordRequest(@RequestParam("email") String email) {
         Optional<User> optionalUser = userRepo.findByEmail(email);
         if (!optionalUser.isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -154,6 +154,7 @@ public class AuthController {
         }
         User user = optionalUser.get();
         user.setPassword(new BCryptPasswordEncoder().encode(passwordResetData.getPassword()));
+        user.setPasswordResetRequired(false);
         userRepo.save(user);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(responseService.createStandardResponse("success", null, "Password reset successfully", null));

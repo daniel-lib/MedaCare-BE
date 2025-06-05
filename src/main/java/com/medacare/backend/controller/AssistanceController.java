@@ -36,9 +36,18 @@ public class AssistanceController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/advice")
+    @PostMapping("/advice")
     public String adviseForSearch(@RequestBody(required = false) String symptoms) {
         Patient currentPatient = patientService.getCurrentUserPatientProfile();
         return assistanceService.adviseForSearch(symptoms, currentPatient);
+    }
+
+    @PreAuthorize("hasRole('PHYSICIAN')")
+    @PostMapping("/consultation")
+    public String consult(@RequestBody(required = false) String topic) {
+        if (topic == null || topic.isBlank()) {
+            return "Please provide a topic for consultation.";
+        }
+        return assistanceService.consult(topic);
     }
 }

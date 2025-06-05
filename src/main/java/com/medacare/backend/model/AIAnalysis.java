@@ -1,7 +1,7 @@
 package com.medacare.backend.model;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,11 +21,13 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @Table(name="ai_analysis")
 public class AIAnalysis implements Serializable{
@@ -47,9 +49,9 @@ public class AIAnalysis implements Serializable{
     private Long medicalRecordRef;
 
     @CreationTimestamp
-    public LocalDateTime createdAt;
+    public OffsetDateTime createdAt;
     @UpdateTimestamp
-    public LocalDateTime updatedAt;
+    public OffsetDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "patient")

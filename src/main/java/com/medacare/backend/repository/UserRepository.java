@@ -8,12 +8,15 @@ import org.springframework.stereotype.Repository;
 
 import com.medacare.backend.model.User;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
+@Hidden
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAll();
 
     Optional<User> findByEmail(String email);
     Optional<User> findByEmailOrId(String email, Long Id);
-    Boolean existsByEmail(String email);
+    boolean existsByEmailIgnoreCase(String email);
 
 }

@@ -9,6 +9,9 @@ import org.springframework.stereotype.Repository;
 import com.medacare.backend.model.Role;
 import com.medacare.backend.model.RoleEnum;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
+@Hidden
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Integer> {
     Optional<Role> findByName(RoleEnum name);

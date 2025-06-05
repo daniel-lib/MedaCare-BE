@@ -3,7 +3,7 @@ package com.medacare.backend.model.helper;
 
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -17,10 +17,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -51,7 +53,7 @@ public class InstitutionFile implements Serializable {
     private Institution fileOwner;
 
     @CreationTimestamp
-    private LocalDateTime uploadDate;
+    private OffsetDateTime uploadDate;
     @UpdateTimestamp
-    private LocalDateTime updateDate;
+    private OffsetDateTime updateDate;
 }

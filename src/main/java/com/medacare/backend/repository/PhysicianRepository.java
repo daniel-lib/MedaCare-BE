@@ -1,6 +1,7 @@
 package com.medacare.backend.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.hibernate.query.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,23 +14,33 @@ import com.medacare.backend.model.Institution.InstitutionRegistrationRequestStat
 import com.medacare.backend.model.Physician;
 import com.medacare.backend.model.Physician.AccountRequestStatus;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
+import com.medacare.backend.model.User;
+
+@Hidden
 @Repository
 public interface PhysicianRepository extends JpaRepository<Physician, Long> {
 
     List<Physician> findAll();
 
     List<Physician> findByAccountRequestStatusNot(AccountRequestStatus status);
+
     Physician findByUserId(long userId);
+
     boolean existsByUserId(long userId);
 
+    Optional<Physician> findByUser(User user);
 
-    // Page <Physician> findAllOrderByRatingDesc(Pageable p);
+    boolean existsByUser(User user);
+
 
     List<Physician> findAllByOrderByRatingDesc();
 
     List<Physician> findByHealthcareProvider(Institution healthcareProvider);
 
     List<Physician> findBySpecializationIn(List<String> specialization);
+
     List<Physician> findByAccountRequestStatus(AccountRequestStatus status);
 
     @Query(value = "SELECT DISTINCT specInner.specialization \n" + //
@@ -38,4 +49,15 @@ public interface PhysicianRepository extends JpaRepository<Physician, Long> {
     List<String> findSpecializationOrderedByRatingDesc();
 
     List<Physician> findBySpecialization(String specialization);
+
+    @Query(value = """
+    SELECT * FROM physician p
+    LEFT JOIN user u ON p.user_id = u.id
+    WHERE LOWER(p.specialization) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    OR LOWER(p.phone_number) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    OR LOWER(u.first_name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    OR LOWER(u.last_name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    """, nativeQuery = true)
+List<Physician> searchByKeyword(String keyword);
+
 }

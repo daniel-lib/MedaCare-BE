@@ -1,7 +1,7 @@
 package com.medacare.backend.model;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -12,10 +12,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @Entity
 public class Notification implements Serializable{
@@ -27,16 +29,18 @@ public class Notification implements Serializable{
     private String message;
 
     @CreationTimestamp
-    private LocalDateTime creationDate;
+    private OffsetDateTime creationDate;
 
     @CreationTimestamp
-    private LocalDateTime sentAt;
+    private OffsetDateTime sentAt;
 
     @Enumerated(EnumType.STRING)
     private NotificationStatus status;
 
     @ManyToOne
     private User receiver;
+    
+    private Long referenceId;
 
     public enum NotificationStatus{
         SENT,

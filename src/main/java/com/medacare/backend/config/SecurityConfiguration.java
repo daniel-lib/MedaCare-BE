@@ -36,14 +36,17 @@ public class SecurityConfiguration {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
-                        // "/swagger-ui.html").permitAll()
                         .requestMatchers(FixedVars.BASE_API_VERSION + "/auth/**", "/api/hello", "/api-docs/**",
                                 "/swagger-ui/**","/",
                                 "/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/swagger-ui/index.html/", "/swagger-ui.html","/api/v1/example/data",
                                 FixedVars.BASE_API_VERSION+"/institutions", FixedVars.BASE_API_VERSION+"/institutions/", FixedVars.BASE_API_VERSION+"/assistance/**")
                         .permitAll()
+                        .requestMatchers("/pay").permitAll()
+                        .requestMatchers("/verify").permitAll()
+                        .requestMatchers("/dev", "/dev/**").permitAll()      
+                        .requestMatchers("/management", "/management/**").hasRole("ADMIN")                
+                        .requestMatchers(FixedVars.BASE_API_VERSION+"/physicians/work-hour").permitAll()
                         .anyRequest()
                         .authenticated())
                         .cors(cors -> cors.configurationSource(customCorsConfiguration))

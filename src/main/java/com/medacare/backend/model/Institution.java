@@ -1,13 +1,14 @@
 package com.medacare.backend.model;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.medacare.backend.model.helper.InstitutionFile;
@@ -27,11 +28,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Institution implements Serializable {
@@ -83,9 +86,9 @@ public class Institution implements Serializable {
     private User adminUser;
 
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
     @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
     private InstitutionRegistrationRequestStatus requestStatus;
@@ -94,10 +97,23 @@ public class Institution implements Serializable {
     private boolean licenseNotValid;
     private boolean identityUnverified;
     private boolean professionallyQualified;
-    private String rejectionReasonNote;
+    private String rejectionReasonNote = "";
 
     @Transient
-    private Map<String, String> fileUploads = new HashMap<>();
+    @JsonIgnore
+    private MultipartFile businessDocument;
+
+    private String businessDocumentUrl;
+
+    @Transient
+    @JsonIgnore
+    private MultipartFile medicalLicense;
+    
+    private String medicalLicenseUrl;
+
+    private String companyLogo = "https://res.cloudinary.com/db6j8ag7i/image/upload/v1746702635/institutionLogoDefault_gwmg9o.png";
+
+
 
     @JsonIgnore
     @OneToMany(mappedBy = "fileOwner")
