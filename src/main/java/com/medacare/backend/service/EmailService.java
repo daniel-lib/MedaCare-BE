@@ -14,6 +14,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.medacare.backend.model.User;
+import com.medacare.backend.model.appointmentBooking.Appointment;
 
 @Service
 public class EmailService {
@@ -37,7 +38,7 @@ public class EmailService {
             String body = "<div style='font-family: Arial, sans-serif;'>"
                     + "<div style='text-align: center;'><img src='cid:headerImage' alt='MedaCare' style='width: 100%; max-width: 600px;' /></div>"
                     + "<h1 style='color: #4a798b; text-align: center;'>" + headerText + "</h1>"
-                    + "<div style='margin: 1em 10em'><h3 style='font-weight: 800; font-size: 17px'>Hello "
+                    + "<div style='margin: 1em 15%'><h3 style='font-weight: 800; font-size: 17px'>Hello "
                     + user.getFirstName().substring(0, 1).toUpperCase() + user.getFirstName().substring(1) + ",</h3>"
                     + "<p style='font-size: 18px'>" + bodyText + "</p>"
                     + "<div><center><p style='text-align: center; font-size: 25px;color: #a55d68; background-color: #F5F5F5;"
@@ -120,6 +121,48 @@ public class EmailService {
             return "Error sending email";
         }
 
+    }
+
+    public int sendGenericEmail(String email, String subject, String introText, String bodyText,
+            String closingText) {
+        try {
+
+            String body = "<div style='font-family: Arial, sans-serif; text-align: center;'>"
+                    + "<img src='cid:headerImage' alt='MedaCare' style='width: 100%; max-width: 600px;' />"
+                    // + "<h2 style='color: #1d5775;'>Welcome to MedaCare!</h2>"
+                    + "<p>" + introText + "</p>"
+                    + "<p>" + bodyText + "</p>"
+                    + "<h1 style='color:rgb(30, 30, 30); font-size:11pt'>" + closingText + "</h1>"
+                    + "</br></br>"
+                    + "<p style='color: #407284; font-weight: 600; font-size: 14px'>Your Health, Anywhere</p>"
+                    + "<p style='color:#848484'>If you did not request this, please ignore this email.</p>"
+                    + "</div>";
+
+            sendEmail(email, subject, body);
+            return 1;
+        } catch (Exception ex) {
+            return 0;
+        }
+
+    }
+
+    public int sendAppointmentEmail(Appointment appointment, String email) {
+        String subject = "Appointment Confirmation";
+        String date = appointment.getAppointmentDate().getDayOfMonth() + " "
+                + appointment.getAppointmentDate().getMonth()
+                + " " + appointment.getAppointmentDate().getYear() + " at "
+                + appointment.getAppointmentStartTime().getHour() + ":"
+                + appointment.getAppointmentStartTime().getMinute();
+
+        String introText = "Dear " + appointment.getPatient().getUser().getFirstName() + ",";
+        String bodyText = "Your appointment has been confirmed. Here are the details:"
+                + "<br><b>Appointment Date & Time:</b> " + date
+                + "<br><b>Physician:</b> " + appointment.getPhysician().getFirstName() + " "
+                + appointment.getPhysician().getLastName()
+                + "<br><b>Meeting Link:</b> " + appointment.getMeetingLink();
+        String closingText = "Thank you for choosing MedaCare!";
+
+        return sendGenericEmail(email, subject, introText, bodyText, closingText);
     }
 
 }
