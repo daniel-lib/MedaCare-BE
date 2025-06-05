@@ -7,6 +7,7 @@ import org.springframework.web.client.RestClient;
 import com.medacare.backend.model.User;
 
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,9 +23,11 @@ import org.springframework.context.annotation.Scope;
 
 @Service
 @Scope("singleton")
+@RequiredArgsConstructor
 public class AI_AssistanceService {
   private final AuthenticationService authenticationService;
   private final Map<Long, String> previousConversation;
+  private final Map<Long, String> previousPhysicianConversation;
 
   private RestClient restClient;
 
@@ -33,11 +36,6 @@ public class AI_AssistanceService {
 
   @Value("${gemini.url}")
   private String GEMINI_URL;
-
-  public AI_AssistanceService(AuthenticationService authenticationService) {
-    this.authenticationService = authenticationService;
-    this.previousConversation = new HashMap<>();
-  }
 
   public String adviseForSearch(@RequestBody String prompt, Patient currentPatient) {
 
@@ -48,23 +46,34 @@ public class AI_AssistanceService {
 
     String symptoms = prompt.isBlank() ? "" : "The patient says: " + prompt + ". ";
     Patient patientProfile = currentPatient;
-    String roleInstruction = "Assume the role of a doctor. The patient is looking for specialist. give them advice on what"
-        +
-        " kind of specialist they might need based on the following context.";
+    String roleInstruction = """
+        Assume the role of a doctor. The patient is looking for specialist.
+        give them advice on what type of specialist they might need based on the following context.""";
+
+    String reminder = """
+         as a last note, Don't act out of character. Don't act out the character of a doctor.
+         Just give them the advice they need. But be friendly. Don't jump straight to diagnosis
+         if they don't request it engage in basic small talk appropriate in a physician-patient relationship.
+         Respond directly to any question or input from the patient, whether it is a formal case,
+        a brief query, or a casual prompt. Always remain concise, accurate, & helpful. If they say hello, say hello back.
+        """;
     // String summarizedMedicalHistory = "The patient had reported that they have
     // medical history of "
     // + patientProfile.getMedicalHistory();
-    String profile = "The patient is " + patientProfile.getAge() + " years old and has the following medical history: "
+    String profile = symptoms + " The patient is " + patientProfile.getAge()
+        + " years old and has the following medical history: "
         +
-        patientProfile.getMedicalHistory() + ". " + symptoms;
+        patientProfile.getMedicalHistory() + ". "
+        + " only use this information to give them the advice they need.";
     String finalPrompt = previousConversation.containsKey(patientProfile.getId())
-        ? "for context, previous conversation with you was as follows: "
+        ? "If context is needed to deal with the patient, previous conversation with you was as follows: "
             + previousConversation.get(patientProfile.getId())
-            + " and please aknowledge the previous conversation if the patient is asking for a follow up question"
+            + " and please the previous conversation in mind without explicitly acknowledging it if the patient is asking for a follow up question"+
+            "if patient is just having a casual conversation, don't acknowledge the previous conversation. just go with the flow."
         : "";
     finalPrompt += roleInstruction + profile /* + summarizedMedicalHistory + prompt */
-        + " What kind of specialist do you think the patient should see?"
-        + " Don't act out of character.Don't act out the character of a doctor. Just give them the advice they need.";
+    // + " What kind of specialist do you think the patient should see?"
+        + reminder;
     String body = """
                     {
           "contents": [{
@@ -170,11 +179,67 @@ public class AI_AssistanceService {
           .map(specialization -> specialization.get("specialization_name"))
           .toList();
       return specializations;
-  
+
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("Failed to parse the response from LLM");
     }
+  }
+
+  public String consult(@RequestBody String prompt) {
+
+    System.out.println("Prompt: " + prompt);
+
+    restClient = RestClient.builder()
+        .baseUrl(GEMINI_URL + "?key=" + GEMINI_KEY)
+        .defaultHeader("Content-Type", "application/json")
+        .build();
+
+    String topic = prompt.isBlank() ? "" : "The physician says: " + prompt + ". ";
+    User physician = authenticationService.getCurrentUser();
+    String roleInstruction = "You are a highly knowledgeable AI medical assistant designed to help" +
+        " a physicians by answering questions, offering advice, and providing consultation on medical " +
+        "topics about patients or themselves. Respond directly to any question or input from the physician, whether it is a formal case, "
+        +
+        "a brief query, or a casual prompt. Always remain concise, accurate, and clinically helpful..";
+
+    String finalPrompt = previousPhysicianConversation.containsKey(physician.getId())
+        ? "for context, previous conversation with you was as follows: "
+            + previousPhysicianConversation.get(physician.getId())
+            + " and please acknowledge the previous conversation if the physician is asking for a follow up question"
+        : "";
+    finalPrompt += roleInstruction + topic
+        + " PS. Don't act out of character. Don't act out the character's actions." +
+        "Don't talk about your speciality. You're just there as a consultant." +
+        "don't talk about what you are doing. just state your fact based opinion." +
+        "Just answer their question, give them the advice, or consultation they need." +
+        " Notice to the subject of their enquiry. The physician might be looking for second opition. or they might be" +
+        " looking advice about their own issue. notice the pronoun & the person they are talking about." +
+        " the physician might be looking for medical advice for themselves or their patients. don't immediately assume it's about a patient";
+    String body = """
+                    {
+          "contents": [{
+            "parts": [{
+              "text": "%s"
+            }]
+          }]
+        }
+                    """.formatted(finalPrompt);
+    StringBuilder stringBuilder = new StringBuilder();
+
+    if (previousPhysicianConversation.containsKey(physician.getId())) {
+      stringBuilder.append(previousPhysicianConversation.get(physician.getId()));
+      stringBuilder.append(" and then ");
+    }
+
+    if (!prompt.isBlank()) {
+      stringBuilder.append("patient said: " + prompt);
+      previousPhysicianConversation.put(physician.getId(), stringBuilder.toString());
+    }
+
+    return restClient.post().body(body).retrieve().toEntity(AiAssistantResponseData.class).getBody().getCandidates()
+        .get(0).getContent().getParts().get(0).getText();
+
   }
 
 }
