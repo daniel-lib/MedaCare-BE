@@ -6,6 +6,7 @@ public class AiAssistantResponseData {
     private List<Candidate> candidates;
     private UsageMetadata usageMetadata;
     private String modelVersion;
+    private String responseId;
 
     public List<Candidate> getCandidates() {
         return candidates;
@@ -29,6 +30,12 @@ public class AiAssistantResponseData {
 
     public void setModelVersion(String modelVersion) {
         this.modelVersion = modelVersion;
+    }
+    public String getResponseId() {
+        return responseId;
+    }
+    public void setResponseId(String responseId) {
+        this.responseId = responseId;
     }
 
     public static class Candidate {

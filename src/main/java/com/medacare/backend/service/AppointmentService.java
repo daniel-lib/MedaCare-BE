@@ -81,7 +81,7 @@ public class AppointmentService {
     public Calendar createCalendar(User user) {
         Calendar calendar = new Calendar();
         calendar.setOwner(user);
-        calendar.setTimezone("UTC");
+        calendar.setTimezone("UTC+3");
         return calendarRepository.save(calendar);
     }
 
@@ -111,12 +111,6 @@ public class AppointmentService {
         }
 
         WorkingHoursWindow savedWorkingWindow = workingHoursWindowRepository.save(workWindow);
-
-        // List<String> slots =
-        // appointmentService.calculateTimeSlots(savedWorkingWindow);
-        // for (String slot : slots) {
-        // System.out.println(slot);
-        // }
 
         List<AvailabilitySlot> timeSlots = calculateTimeSlots(savedWorkingWindow);
 

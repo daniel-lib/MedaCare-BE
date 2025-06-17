@@ -50,14 +50,11 @@ public interface PhysicianRepository extends JpaRepository<Physician, Long> {
 
     List<Physician> findBySpecialization(String specialization);
 
-    @Query(value = """
-    SELECT * FROM physician p
-    LEFT JOIN user u ON p.user_id = u.id
-    WHERE LOWER(p.specialization) LIKE LOWER(CONCAT('%', :keyword, '%'))
-    OR LOWER(p.phone_number) LIKE LOWER(CONCAT('%', :keyword, '%'))
-    OR LOWER(u.first_name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-    OR LOWER(u.last_name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-    """, nativeQuery = true)
-List<Physician> searchByKeyword(String keyword);
+    @Query("SELECT p FROM Physician p WHERE " +
+            "LOWER(p.specialization) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(p.phoneNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(p.user.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(p.user.lastName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<Physician> searchByKeyword(String keyword);
 
 }
