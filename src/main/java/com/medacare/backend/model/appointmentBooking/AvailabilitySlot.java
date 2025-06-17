@@ -68,6 +68,8 @@ public class AvailabilitySlot implements Serializable{
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isMerged = false;
 
+    private long mergedWith; //id of first availability slot
+
     @CreationTimestamp
     @Column(updatable = false)
     private OffsetDateTime createdAt;

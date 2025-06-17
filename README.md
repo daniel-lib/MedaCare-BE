@@ -34,29 +34,39 @@ Or, if Maven is installed:
 ```bash
 mvn spring-boot:run
 ```
+---
+
 ## 📁 Project Structure
 
-```text
-.
-├── src/
-│   ├── main/
-│   │   ├── java/com/medacare/backend/
-│   │   │   ├── config/                # Configuration files (e.g., security, JWT)
-│   │   │   ├── controller/            # REST controllers
-│   │   │   ├── dto/                   # Data Transfer Objects
-│   │   │   ├── model/                 # Entity models
-│   │   │   ├── repository/            # Data access layer
-│   │   │   ├── service/               # Business logic layer
-│   │   │   └── CoreApplication.java   # Main application entry point
-│   │   └── resources/
-│   │       ├── application.properties # Application configuration
-│   └── test/
-│       └── java/com/meda_care/core/   # Unit and integration tests
-├── pom.xml                            # Maven project configuration
-├── mvnw                               # Maven wrapper script 
-├── mvnw.cmd                           # Maven wrapper script (Windows)
-└── README.md                          # Project overview and setup instructions
-
+```
+MedaCare-BE/
+├── .gitignore                  # Git ignore rules
+├── .gitattributes              # Git attributes for line endings
+├── Dockerfile                  # Docker build instructions
+├── mvnw, mvnw.cmd              # Maven wrapper scripts (Linux/Windows)
+├── pom.xml                     # Maven project configuration
+├── README.md                   # Project documentation
+│
+└── src/
+    └── main/
+        ├── java/
+        │   └── com/
+        │       └── medacare/
+        │           └── backend/
+        │               ├── config/                # Application and security configuration classes
+        │               ├── controller/            # REST API controllers (handle HTTP requests)
+        │               ├── dto/                   # Data Transfer Objects for API/service communication
+        │               ├── initialization/        # Data seeding and initialization logic
+        │               ├── model/                 # Domain models and JPA entities
+        │               │   ├── helper/            # Helper or utility models (e.g., InstitutionFile)
+        │               │   └── appointmentBooking/# Appointment-related models
+        │               ├── repository/            # Spring Data JPA repositories (data access layer)
+        │               │   └── appointment/       # Appointment-related repositories
+        │               ├── service/               # Business logic and service classes
+        │               └── CoreApplication.java   # Main Spring Boot application entry point
+        └── resources/
+            ├── application.properties            # Main application configuration
+            └── application-dev.properties        # (gitignored) Development config
 ```
 
 ---

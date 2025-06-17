@@ -26,7 +26,6 @@ public class SearchService {
         List<Physician> physicians = physicianRepository.searchByKeyword(keyword);
         List<Institution> institutions = institutionRepository.searchByKeyword(keyword);
 
-        System.out.println("SISSS: "+physicians.size());
         Map<String, Object> results = new HashMap<>();
         results.put("physicians", physicians);
         results.put("institutions", institutions);
